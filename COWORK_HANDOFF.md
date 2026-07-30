@@ -4,7 +4,7 @@ Paste this to Cowork when you start, so it has full context.
 
 ## What this is
 Warmline: a single-page website + an AI cold-outreach tool. The visitor writes
-one real detail about a prospect and gets an opening line in a human voice,
+a detail about a prospect or company and gets an opening line - WARMLINE - in a human voice or tone,
 with "robot words" banned. Free, no signup. By Amy (data analyst).
 
 ## Files
@@ -13,6 +13,7 @@ with "robot words" banned. Free, no signup. By Amy (data analyst).
 - api/count.js, incr.js, subscribe.js — global counter + optional email capture.
 - README.md    — public, safe for GitHub.
 - NOTES_PRIVATE_do_not_push.md — Amy's private notes (gitignored).
+- COWORK_HANDOFF - for cowork
 
 ## What I need help with (in order)
 1. Deploy to Vercel with my ANTHROPIC_API_KEY, and set a $5/month spend cap
