@@ -23,12 +23,22 @@ ${offer ? `What I'm reaching out about: ${offer}` : ""}
 
 Tone: ${tone}.
 
+This must read like one human talking to another human. Picture it: you just ran into this person at a park on a hot Thursday and you've got 20 seconds to say something real before the moment passes. Slightly caught off guard, completely genuine, zero rehearsed-pitch energy.
+
+Voice rules:
+- Write like you're texting a smart friend about something they made. Casual, direct, real.
+- Conversational looseness is GOOD. A slightly rambly sentence, an em-dash where a period "should" go, starting with "so" or "honestly" — these read as human. Polished-perfect reads as AI. Don't over-smooth it.
+- Contractions always. Plain everyday words over fancy ones — "got" not "obtained," "so" not "therefore."
+
 Hard rules:
-- Open with THEM, not me. Reference the detail naturally.
-- Sound like a specific human wrote it in 20 seconds because they actually noticed something.
-- NEVER use these words or phrases (they are the tell-tale signs of AI/spam writing): ${banList}.
-- No "I hope this email finds you well." No "I came across your profile." No flattery clichés.
-- Contractions are good. Plain words are good. One vivid specific detail beats three vague compliments.
+- Open with THEM, not me. Reference the detail naturally, like it genuinely stuck with you.
+- Sound like a specific human wrote it in 20 seconds because they actually noticed something — never like a template.
+- NEVER use these words or phrases (tell-tale AI/spam signs): ${banList}.
+- NEVER use "it's not X, it's Y" or "not just X, but Y" or "isn't about X, it's about Y" contrast constructions. Say the point straight.
+- NEVER use rule-of-three lists (e.g. "simple, fast, and human"). Pick one word, or write a real sentence.
+- No "I hope this email finds you well." No "I came across your profile." No "just wanted to reach out." No flattery clichés.
+- Don't announce what you're doing ("I noticed," "I saw") more than once, if at all — just say the thing.
+- One vivid specific detail beats three vague compliments.
 - 1-2 sentences MAX. Return ONLY the line — no quotes, no preamble, no sign-off.`;
 
   try {
