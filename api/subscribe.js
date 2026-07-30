@@ -1,0 +1,94 @@
+// api/subscribe.js — saves emails from the "get the next tool in your inbox" box.
+// Stored in a Redis hash: one entry per email, so the same person signing up
+// twice doesn't create a duplicate. Value is the date they signed up.
+
+function redisConfig() {
+  const url =
+    process.env.KV_REST_API_URL ||
+    process.env.UPSTASH_REDIS_REST_URL ||
+    process.env.REDIS_REST_URL;
+  const token =
+    process.env.KV_REST_API_TOKEN ||
+    process.env.UPSTASH_REDIS_REST_TOKEN ||
+    process.env.REDIS_REST_TOKEN;
+  return url && token ? { url: url.replace(/\/$/, ""), token } : null;
+}
+
+async function redis(cfg, command) {
+  const r = await fetch(cfg.url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${cfg.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(command),
+  });
+  if (!r.ok) throw new Error(`Redis said ${r.status}`);
+  const data = await r.json();
+  return data.result;
+}
+
+const LIST_KEY = "warmline:subscribers";
+
+// Deliberately simple. Real validation is whether the email bounces, not regex.
+function looksLikeEmail(s) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
+}
+
+export default async function handler(req, res) {
+  // GET with the right secret = download your list. See notes at the bottom.
+  if (req.method === "GET") {
+    const secret = process.env.ADMIN_SECRET;
+    const given = req.query?.key || "";
+    if (!secret || given !== secret) {
+      return res.status(404).json({ error: "Not found" });
+    }
+    const cfg = redisConfig();
+    if (!cfg) return res.status(200).json({ subscribers: [], count: 0 });
+    try {
+      const flat = (await redis(cfg, ["HGETALL", LIST_KEY])) || [];
+      // HGETALL comes back as [email, date, email, date, ...]
+      const subscribers = [];
+      for (let i = 0; i < flat.length; i += 2) {
+        subscribers.push({ email: flat[i], signedUp: flat[i + 1] });
+      }
+      return res.status(200).json({ subscribers, count: subscribers.length });
+    } catch {
+      return res.status(500).json({ error: "Could not read list" });
+    }
+  }
+
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const { email = "" } = req.body || {};
+  const clean = String(email).trim().toLowerCase().slice(0, 254);
+
+  if (!looksLikeEmail(clean)) {
+    return res.status(400).json({ error: "That doesn't look like an email" });
+  }
+
+  const cfg = redisConfig();
+  if (!cfg) {
+    // Storage not wired up yet. Say OK so the visitor isn't shown an error,
+    // but flag it in the response so YOU can tell when testing.
+    return res.status(200).json({ ok: true, storage: "not connected" });
+  }
+
+  try {
+    // HSET only overwrites the signup date if they're already on the list.
+    await redis(cfg, ["HSET", LIST_KEY, clean, new Date().toISOString()]);
+    return res.status(200).json({ ok: true });
+  } catch {
+    return res.status(200).json({ ok: true, storage: "unavailable" });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// TO READ YOUR LIST:
+//   1. In Vercel, add an environment variable ADMIN_SECRET set to any long
+//      random string you invent (treat it like a password).
+//   2. Visit:  https://your-site.vercel.app/api/subscribe?key=YOUR_SECRET
+//   Without the correct key this returns a 404, so nobody can scrape your list.
+// ---------------------------------------------------------------------------

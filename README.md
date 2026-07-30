@@ -9,6 +9,8 @@ with *them*, references something specific, and skips every tell-tale AI phrase
 ("I hope this email finds you well," "I came across your profile," and a long
 banned-words list baked in).
 
+Built as a single self-contained page. Free to use, no signup.
+
 ## What it does
 - You give it a name, a company or newsletter, and one real detail you noticed.
 - You pick a tone per prospect: Warm, Direct, Technical, or Executive.
