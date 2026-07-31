@@ -463,12 +463,12 @@ a.uc-link{text-decoration:none;border-color:var(--green)}a.uc-link h4{color:var(
   </section>
 
   <section class="section" id="faq">
-    <h2 class="sec-head">Frequntly Asked Questions</h2>
+    <h2 class="sec-head">Frequently Asked Questions</h2>
     <div class="faq">
-      <details class="qa"><summary>Is Warmline free?</summary><p>Yes. Transparency: You have fifteen (15) openers per browser, no credit card or signup. The paid tier (unlimited plus CSV import) is optional and comes later.</p></details>
-      <details class="qa"><summary>How is this different from Lemlist or Instantly?</summary><p>Those are full outbound platforms at $30 to 99/mo. Warmline does one thing, gives you the first line, and does it in a human voice with a banned-robot-words list baked in. Think of it as meeting a CEO for the first time: what you would say and how you will say it, that's Warmline.</p></details>
+      <details class="qa"><summary>Is Warmline free?</summary><p>Yes. Transparency: You have fifteen (15) open lines (Warmline) per browser, no credit card or signup. The paid tier (unlimited plus CSV import) is optional and comes later.</p></details>
+      <details class="qa"><summary>How is this different from Lemlist or Instantly?</summary><p>Those are full outbound platforms at $30 to 99/mo. Warmline does one thing, gives you the first line, and does it in a human voice with a banned-robot-words list baked in. Think of it as meeting a CEO for the first time: what you would say and how you will say it? that's Warmline.</p></details>
       <details class="qa"><summary>Does it store my prospects?</summary><p>No. Nothing you type is saved anywhere. The Warmline(s) are generated and handed straight back to you.</p></details>
-      <details class="qa"><summary>What makes the opening lines from Warmline different from AI openers?</summary><p>Besides the fact that a human created it? There is a hard list of banned phrases plus a rule to "always" lead with the person, not with you.</p></details>
+      <details class="qa"><summary>What makes the opening lines from Warmline different from AI opening lines?</summary><p>Besides the fact that a human created it and it's conversational? There is a hard list of banned phrases plus a rule to "always" lead with the person, not with you.</p></details>
       <details class="qa"><summary>Who made this?</summary><p>Ame/Amy, a data scientist who got curious about conversational outreaches and bland AI tones, and wants to rebuild more overpriced tools.</p></details>
     </div>
   </section>
@@ -482,7 +482,7 @@ a.uc-link{text-decoration:none;border-color:var(--green)}a.uc-link h4{color:var(
     </div>
     <div class="fcol">
       <div class="fh">Resources</div>
-      <a href="https://ameikpe.substack.com" target="_blank" rel="noopener">Substack</a><a href="https://amyu.gumroad.com" target="_blank" rel="noopener">Gumroad templates</a><a href="https://github.com/YummyAmy" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://ameikpe.substack.com" target="_blank" rel="noopener">Substack</a><a href="https://amyu.gumroad.com" target="_blank" rel="noopener">Trackers and templates</a><a href="https://github.com/YummyAmy" target="_blank" rel="noopener">GitHub</a>
     </div>
     <div class="fcol">
       <div class="fh">Company</div>
@@ -524,9 +524,9 @@ document.getElementById('add').onclick=()=>{rows.push({tone:'warm'});render();};
 function hasContent(r){return (r.name||'').trim()||(r.company||'').trim()||(r.detail||'').trim();}
 async function generateOne(i){if(left()<=0){refreshMeter();return;}const row=rows[i];if(!hasContent(row))return;const errEl=document.getElementById('err-'+i);if(errEl)errEl.textContent='';const btn=document.querySelector('[data-go="'+i+'"]');if(btn){btn.textContent='Writing...';btn.disabled=true;}try{const res=await fetch('/api/write',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({row:row,tone:TONES[row.tone||'warm'],offer:document.getElementById('offer').value.trim(),banned:BANNED})});if(!res.ok){let msg="Couldn't reach the writer. Try again.";try{const e=await res.json();if(e&&e.error)msg=e.error;}catch(_){}const err=new Error(msg);err.shown=msg;throw err;}const d=await res.json();results[i]=d.line;bumpUsed();loadGlobal();render();}catch(err){if(errEl)errEl.textContent=err.shown||"Couldn't reach the writer. Try again.";if(btn){btn.textContent='Write the line';btn.disabled=false;}}}
 document.getElementById('all').onclick=async()=>{const btn=document.getElementById('all');btn.disabled=true;btn.textContent='Writing...';for(let i=0;i<rows.length;i++){if(hasContent(rows[i])&&left()>0)await generateOne(i);}btn.disabled=false;btn.textContent='Write all lines';if(Object.keys(results).length){document.getElementById('bear').classList.add('show');document.getElementById('pen').style.display='none';document.getElementById('doneLine').classList.add('show');}};
-document.getElementById('download').onclick=()=>{const lines=rows.map((r,i)=>results[i]?(r.name||'Prospect '+(i+1))+(r.company?' ('+r.company+')':'')+':\n'+results[i]+'\n':null).filter(Boolean);if(!lines.length){alert('Write a few warmlines first, then download.');return;}const blob=new Blob(['My openers\n\n'+lines.join('\n')],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-openers.txt';a.click();};
+document.getElementById('download').onclick=()=>{const lines=rows.map((r,i)=>results[i]?(r.name||'Prospect '+(i+1))+(r.company?' ('+r.company+')':'')+':\n'+results[i]+'\n':null).filter(Boolean);if(!lines.length){alert('Write a few warmlines first, then download.');return;}const blob=new Blob(['My Warmline(s)\n\n'+lines.join('\n')],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-warmline.txt';a.click();};
 document.getElementById('subBtn').onclick=async()=>{const email=document.getElementById('email').value.trim();if(!email||email.indexOf('@')<0)return;try{await fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})});}catch(e){}document.getElementById('subMsg').classList.add('show');document.getElementById('email').value='';};
-const seed=[["no more ai, no-feel openers (warmline)","Sarah"],["used it for some pitches, 2 replied","Tom"],["finally!!! an opener that isn't cringe","Alex"],["the technical tone is scary good. i thought i wrote it myself","Jenna"],["she created this for overthinkers like me","Dan"]];
+const seed=[["no more ai, no-feel open lines (warmline)","Sarah"],["used it for 4 pitches, 2 replied","Tom"],["finally!!! an opener that isn't cringe","Alex"],["the technical tone is scary good. i thought i wrote it myself","Jenna"],["she created this for overthinkers like me","Dan"]];
 const mtrack=document.getElementById('mtrack');
 function renderMarquee(list){const h=list.map(x=>'<span class="chip"><span class="q">"'+esc(x[0])+'"</span><span class="nm">'+esc(x[1])+'</span></span>').join('');mtrack.innerHTML=h+h;}
 renderMarquee(seed);
