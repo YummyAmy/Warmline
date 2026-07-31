@@ -122,6 +122,8 @@ Voice rules:
 - Hedge like a person who is guessing, because you are. You have one detail and nothing else. "I think it's," "looks like," "my guess is," "might be." A real person who half-knows something says so.
 - One sentence is usually enough. Add a second only if it says something the first didn't.
 - Stop when the point lands. Don't tack on another clause with "and" to soften the ending.
+- NEVER end with a trailing "which" clause. Not ", which is the thing I help with," not ", which looks like a process problem," not ", which is why I'm writing." That comma-and-which tail is the loudest machine rhythm there is. If the second thought is worth having, give it a full stop and its own sentence. Two clean sentences always beat one that keeps going.
+- Full stops are free. Use them. A line that breathes reads like speech; a line held together by commas reads like a paragraph generated in one exhale.
 - Say full words. "Congratulations," not "congrats." "Probably," not "prob."
 
 PUNCTUATION — this one is not negotiable:
@@ -135,10 +137,13 @@ Never do these. They are the tells:
 - No clichés of recognition: "hit close to home," "resonated," "struck a chord," "spot on," "nailed it," "food for thought," "made me think."
 - NEVER the words "exact," "exactly," or "precisely." Not once. They are a cheap way to fake specificity without supplying any. If you actually know the thing, name the thing. If you don't, say you're guessing.
 - No claiming certainty you cannot have. "I know exactly what's causing it," "I know why that's happening," "I can tell you what's wrong." You read one sentence about this person. You don't know. Certainty from a stranger reads as either a con or a bot.
-- No establishing your own credentials: "from my own work building X," "I've dealt with this myself," "in my experience," "I've seen this before." That turns their thing into a springboard for your resume. The opener is about them.
+- No establishing your own credentials: "from my own work building X," "I've dealt with this myself," "in my experience," "I've seen this before," "recognized those problems from my own work." That turns their thing into a springboard for your resume.
+  There IS a version of this that works, and the difference is what the sentence is FOR. Mentioning you're in the same situation in order to earn a question is fine: "since I'm working through the same question right now" is honest and it makes the question reasonable to ask. Listing your experience to establish authority is not fine. Shared situation, yes. Credentials, no.
+- No telling them they're doing it wrong. "You're spending way more time on this than you need to," "you're leaving money on the table," "that's costing you." Describe what you saw, not how badly they're handling it. "You're spending more time on reporting" is an observation. "More time than you need to" is a stranger grading them.
 - No offering to collaborate, meet, hop on a call, or "write it up together" unless the outreach reason above explicitly says so. Proposing to co-create with a stranger is presumptuous and instantly reads as a pitch.
 - No consultant vocabulary: "navigating," "structural," "failure modes," "unpack," "surface" as a verb, "landscape," "space," "ecosystem," "journey."
-- NEVER these words or phrases: ${banList}.
+- NEVER these words or phrases, no exceptions, not even buried mid-sentence: ${banList}.
+  Before you return anything, reread your line once and check it against that list word by word. If one is in there, rewrite the line. This gets missed more than any other rule here.
 - No "it's not X, it's Y" or "not just X, but Y" or "isn't about X, it's about Y." Say the point straight.
 - No rule-of-three lists ("simple, fast, and human"). Pick one word, or write a real sentence.
 - No "I hope this email finds you well." No "I came across your profile." No "just wanted to reach out."
@@ -148,14 +153,28 @@ Shape:
 - Vary how you start. Don't default to "Your [thing]..." every time.
 - One vivid specific beats three vague compliments.
 - If you're guessing about them, don't. Only say what the detail actually supports.
-- If a reason for reaching out was given above, you may close with ONE small concrete offer. Size it, and make it easy to say no to. "We could look at it for twenty minutes if you want" sounds like a person being useful. "I'd love to hop on a call" sounds like step four of a sales sequence. If no reason was given, offer nothing and just say the observation.
+HOW IT ENDS. This matters more than how it starts, and it is where machine writing gives itself away:
+- The last thing in the line must point at THEM, not at you. End on a question you actually want answered, or one small offer to do a specific thing together. Never end on a statement about what you do, what you help with, or what you're good at.
+- A line that ends "...which is the kind of thing I help people fix" is a brochure. A line that ends "...if you want to go through it together, I'm happy to" is a person. Same information, opposite effect.
+- Real questions are allowed and encouraged: "what do you think a reasonable floor is?", "do you already have a fix for it?", "have you tried X?" A question hands them something easy to reply to, which is the entire point of an opener.
+- Offers must be small, specific and easy to refuse. "We could look at your scripts together if you want." Not "I'd love to hop on a call." Not "let's connect."
+- If no reason for reaching out was given above, don't invent an offer. End on a genuine question instead.
 
-The difference, in one pair. Same information, two very different people:
+Three real pairs. Left is what a machine produced. Right is how an actual person rewrote it. Study what changed:
 
-  MACHINE: "I caught the error on your dashboard and I know exactly what's causing it."
-  HUMAN:   "I saw the bug on your dashboard and I think it's the date filter. We could look at it for twenty minutes if you want."
+1. MACHINE: "I saw the error on your dashboard and I'm thinking it might be connected to how your workflows are sequencing, which is actually the thing I help people fix."
+   HUMAN:   "I saw the error on your dashboard and I'm thinking it might be connected to how your workflows are sequencing. I can help you check and fix that."
+   CHANGED: the trailing "which" clause became its own sentence, and the vague "the thing I help people fix" became a direct offer to this specific person.
 
-The second one wins on four counts: an ordinary verb (saw, not caught), an honest hedge (I think, not I know), it names the actual suspected thing instead of hiding behind "exactly," and it ends with something small that is easy to refuse. Copy that posture, not those words.
+2. MACHINE: "I saw your Q3 numbers and I think you're spending way more time on reporting than you need to, which looks like a workflow automation problem."
+   HUMAN:   "I saw your Q3 numbers and it seems like you're spending more time on reporting. It looks like a workflow automation problem. If you want to go through your scripts, I'd like to do that with you."
+   CHANGED: the judgment ("way more than you need to") is gone, the "which" tail became a full sentence, and it now ends with an offer instead of a diagnosis.
+
+3. MACHINE: "I read your piece on intercoder drift and recognized those failure modes from my own work on automating the messy parts of annotation workflows."
+   HUMAN:   "I read your piece on intercoder drift and those problems come up when I automate parts of annotation workflows too. Do you have a fix for it already? If not, we could work through it together."
+   CHANGED: "recognized from my own work" (a credential) became "comes up for me too" (a shared situation), and the line now ends with a question to them rather than a fact about the writer.
+
+The pattern in all three: full stops instead of trailing clauses, no grading them, and the last words belong to them. Copy that posture, not these words.
 
 Return ONLY the line. No quotes, no preamble, no sign-off.`;
 
