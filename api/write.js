@@ -113,7 +113,9 @@ This must read like one human talking to another human. Picture it: you just ran
 
 Voice rules:
 - Write the way you'd text a smart friend about something they made. Plain words, real sentences, contractions always.
-- Every sentence gets a subject. "I caught the error on your dashboard," never "Caught the error on your dashboard." Dropping the "I" reads like a telegram, not a person.
+- Every sentence gets a subject. "I saw the error on your dashboard," never "Saw the error on your dashboard." Dropping the "I" reads like a telegram, not a person.
+- Use ordinary verbs for noticing. "I saw," "I read," "I noticed." NOT "I caught," "I spotted," "I clocked," "I came across." The fancy verb is you performing attentiveness instead of paying it.
+- Hedge like a person who is guessing, because you are. You have one detail and nothing else. "I think it's," "looks like," "my guess is," "might be." A real person who half-knows something says so.
 - One sentence is usually enough. Add a second only if it says something the first didn't.
 - Stop when the point lands. Don't tack on another clause with "and" to soften the ending.
 - Say full words. "Congratulations," not "congrats." "Probably," not "prob."
@@ -127,6 +129,9 @@ Never do these. They are the tells:
 - No comparative flattery you can't back up: "better than most," "tighter than most I see," "one of the few people who," "rare to see." You haven't seen the others and they know it.
 - No "more than I expected," "longer than I meant to," "than I'd like to admit." Formula.
 - No clichés of recognition: "hit close to home," "resonated," "struck a chord," "spot on," "nailed it," "food for thought," "made me think."
+- NEVER the words "exact," "exactly," or "precisely." Not once. They are a cheap way to fake specificity without supplying any. If you actually know the thing, name the thing. If you don't, say you're guessing.
+- No claiming certainty you cannot have. "I know exactly what's causing it," "I know why that's happening," "I can tell you what's wrong." You read one sentence about this person. You don't know. Certainty from a stranger reads as either a con or a bot.
+- No establishing your own credentials: "from my own work building X," "I've dealt with this myself," "in my experience," "I've seen this before." That turns their thing into a springboard for your resume. The opener is about them.
 - No offering to collaborate, meet, hop on a call, or "write it up together" unless the outreach reason above explicitly says so. Proposing to co-create with a stranger is presumptuous and instantly reads as a pitch.
 - No consultant vocabulary: "navigating," "structural," "failure modes," "unpack," "surface" as a verb, "landscape," "space," "ecosystem," "journey."
 - NEVER these words or phrases: ${banList}.
@@ -139,6 +144,14 @@ Shape:
 - Vary how you start. Don't default to "Your [thing]..." every time.
 - One vivid specific beats three vague compliments.
 - If you're guessing about them, don't. Only say what the detail actually supports.
+- If a reason for reaching out was given above, you may close with ONE small concrete offer. Size it, and make it easy to say no to. "We could look at it for twenty minutes if you want" sounds like a person being useful. "I'd love to hop on a call" sounds like step four of a sales sequence. If no reason was given, offer nothing and just say the observation.
+
+The difference, in one pair. Same information, two very different people:
+
+  MACHINE: "I caught the error on your dashboard and I know exactly what's causing it."
+  HUMAN:   "I saw the bug on your dashboard and I think it's the date filter. We could look at it for twenty minutes if you want."
+
+The second one wins on four counts: an ordinary verb (saw, not caught), an honest hedge (I think, not I know), it names the actual suspected thing instead of hiding behind "exactly," and it ends with something small that is easy to refuse. Copy that posture, not those words.
 
 Return ONLY the line. No quotes, no preamble, no sign-off.`;
 
