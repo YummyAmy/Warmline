@@ -8,7 +8,8 @@ Most cold outreach dies on the first line. Warmline writes that line so it leads
 with *them*, references something specific, and skips every tell-tale AI phrase
 ("I hope this email finds you well," "I came across your profile," and a long
 banned-words list baked in).
-
+Write one real detail about a prospect and get
+back an opening line that sounds like a person wrote it. (AI fillers and robotic words are banned).
 Built as a single self-contained page. Free to use, no signup.
 
 ## What it does

@@ -62,13 +62,13 @@ input.f:focus,.offer:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(2
 .done{text-align:center;font-family:'Courier New',monospace;color:var(--green);font-size:13px;margin-top:4px;display:none}.done.show{display:block;animation:fade .5s}
 .meter{margin:26px auto 0;display:flex;align-items:stretch;justify-content:center;max-width:430px;background:var(--paper-2);border:1px solid var(--line);border-radius:14px;padding:15px 6px;box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 1px 3px rgba(27,42,36,.05)}
 .meter-cell{flex:1;text-align:center;padding:0 12px}
-.meter-cell b{display:block;font-family:Georgia,'Times New Roman',serif;font-size:31px;line-height:1.02;font-weight:700;letter-spacing:-.5px;color:var(--green-deep);font-variant-numeric:tabular-nums}
+.meter-cell b{display:block;font-family:Georgia,'Times New Roman',serif;font-size:23px;line-height:1.05;font-weight:700;letter-spacing:-.3px;color:var(--green-deep);font-variant-numeric:tabular-nums}
 .meter-cell span{display:block;margin-top:6px;font-family:'Courier New',monospace;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft)}
 .meter-div{width:1px;background:var(--line);align-self:stretch;flex:0 0 1px}
 .meter.low .meter-cell:last-child b{color:var(--pink)}
 .meter b.pop{animation:meterpop .5s cubic-bezier(.34,1.56,.64,1)}
 @keyframes meterpop{0%{transform:scale(1)}38%{transform:scale(1.28);color:var(--gold-2)}100%{transform:scale(1)}}
-@media(max-width:430px){.meter{margin-top:20px}.meter-cell{padding:0 6px}.meter-cell b{font-size:26px}.meter-cell span{font-size:9px;letter-spacing:.05em}}
+@media(max-width:430px){.meter{margin-top:20px}.meter-cell{padding:0 6px}.meter-cell b{font-size:20px}.meter-cell span{font-size:9px;letter-spacing:.05em}}
 @media(prefers-reduced-motion:reduce){.meter b.pop{animation:none}}
 .pitch{margin-top:8px;text-align:center;font-size:13px;color:var(--ink-soft)}
 .paywall{background:var(--paper-2);border:1px dashed var(--gold-2);border-radius:12px;padding:20px;text-align:center;margin-top:16px;display:none}
@@ -465,10 +465,10 @@ a.uc-link{text-decoration:none;border-color:var(--green)}a.uc-link h4{color:var(
   <section class="section" id="faq">
     <h2 class="sec-head">Frequntly Asked Questions</h2>
     <div class="faq">
-      <details class="qa"><summary>Is Warmline free?</summary><p>Yes. Transparency: You have fifteen (15) warmlines per browser, no credit card or signup. The paid tier (unlimited plus CSV import) is optional and comes later.</p></details>
+      <details class="qa"><summary>Is Warmline free?</summary><p>Yes. Transparency: You have fifteen (15) openers per browser, no credit card or signup. The paid tier (unlimited plus CSV import) is optional and comes later.</p></details>
       <details class="qa"><summary>How is this different from Lemlist or Instantly?</summary><p>Those are full outbound platforms at $30 to 99/mo. Warmline does one thing, gives you the first line, and does it in a human voice with a banned-robot-words list baked in. Think of it as meeting a CEO for the first time: what you would say and how you will say it, that's Warmline.</p></details>
       <details class="qa"><summary>Does it store my prospects?</summary><p>No. Nothing you type is saved anywhere. The Warmline(s) are generated and handed straight back to you.</p></details>
-      <details class="qa"><summary>What makes the openers different from AI?</summary><p>Besides the fact that a human created it? There is a hard list of banned phrases plus a rule to "always" lead with the person, not with you.</p></details>
+      <details class="qa"><summary>What makes the opening lines from Warmline different from AI openers?</summary><p>Besides the fact that a human created it? There is a hard list of banned phrases plus a rule to "always" lead with the person, not with you.</p></details>
       <details class="qa"><summary>Who made this?</summary><p>Ame/Amy, a data scientist who got curious about conversational outreaches and bland AI tones, and wants to rebuild more overpriced tools.</p></details>
     </div>
   </section>
