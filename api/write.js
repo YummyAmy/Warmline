@@ -31,8 +31,12 @@ async function redis(cfg, command) {
 // The 15-use limit in the browser is a courtesy, not a lock — anyone can clear
 // their storage. These two limits run on the server, where they can't be
 // bypassed, and they're what actually protects your API bill.
-const PER_IP_PER_DAY = 40;    // generous for a real person, useless for a script
-const GLOBAL_PER_DAY = 1500;  // hard ceiling across everyone
+// Sized against a real budget, not a vibe. At roughly half a cent per opener,
+// 200 a day is about $1, so a $5 balance survives about five days of steady
+// traffic instead of emptying in one afternoon. Raise these when the balance
+// can afford it, not before.
+const PER_IP_PER_DAY = 20;    // ~10c max from any single visitor per day
+const GLOBAL_PER_DAY = 200;   // ~$1/day ceiling across everyone
 
 function today() {
   return new Date().toISOString().slice(0, 10); // "2026-07-30"
@@ -164,7 +168,9 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
+        // Haiku costs about a third of Sonnet for this job. If the openers ever
+        // start reading flat, put "claude-sonnet-4-6" back here and redeploy.
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 200,
         messages: [{ role: "user", content: prompt }],
       }),
