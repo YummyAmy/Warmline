@@ -1,5 +1,31 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Warmline — AI outreach in a human voice</title><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Warmline. First lines that sound like you.</title>
+<meta name="description" content="Write one real detail about someone you want to reach. Get an opening line a human would send, with every robot phrase banned. Free, no signup."/>
+<link rel="canonical" href="https://warmline.dataaccordingtome.com/"/>
+<!-- The little icon in the browser tab and on a phone home screen. -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta name="theme-color" content="#0f4d36"/>
+<!-- Open Graph. This is what LinkedIn, WhatsApp, Slack, iMessage, Facebook
+     and Substack read when the link is pasted. Without these the link
+     renders as a bare grey box with no image and no description. -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://warmline.dataaccordingtome.com/"/>
+<meta property="og:site_name" content="Warmline"/>
+<meta property="og:title" content="Warmline. First lines that sound like you."/>
+<meta property="og:description" content="Write one real detail about someone you want to reach. Get an opening line a human would send, with every robot phrase banned. Free, no signup."/>
+<meta property="og:image" content="https://warmline.dataaccordingtome.com/share-card.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="Warmline. First lines that sound like you. Cold outreach without the robot."/><style>
 .topbar-full{position:relative;z-index:3}.topbar-inner{max-width:1440px;margin:0 auto;padding:0 28px}
+.cap-capture{margin-top:10px;padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:var(--paper-2);font-family:Georgia,serif;color:var(--ink);font-size:15px;line-height:1.5}
+.cap-capture p{margin:0 0 6px}
+.cap-capture .cap-sub{color:var(--ink-soft);font-size:14px;margin-bottom:12px}
+.cap-row{display:flex;gap:8px;flex-wrap:wrap}
+.cap-input{flex:1;min-width:170px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-family:Georgia,serif;font-size:14px;background:#fff;color:var(--ink)}
+.cap-btn{padding:10px 18px;border:0;border-radius:8px;background:var(--green-deep);color:var(--paper);font-family:'Courier New',monospace;font-size:14px;cursor:pointer}
+.cap-btn:disabled{opacity:.6;cursor:default}
 :root{--paper:#f3efe4;--paper-2:#ece6d6;--ink:#1b2a24;--ink-soft:#4a5a51;--green:#1d6e4f;--green-deep:#0f4d36;--gold:#e0a324;--gold-2:#ca8f13;--pink:#d85a7a;--line:#d8d1bf;--card:#fff;--err:#c0512f;}
 *{box-sizing:border-box}html,body{margin:0;padding:0;max-width:100%;overflow-x:clip}html{scroll-behavior:smooth}
 body{background:var(--paper);color:var(--ink);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip}
@@ -332,7 +358,7 @@ a.uc-link{text-decoration:none;border-color:var(--green)}a.uc-link h4{color:var(
   <!-- ====== EDIT BELOW ====== -->
   <header class="hero">
     <div class="eyebrow">AI outreach . human voice</div>
-    <h1>Where robots <span class="g">dont eat your words.</span></h1>
+    <h1>Where robots <span class="g">don't eat your words.</span></h1>
     <p class="closers">First liners are your <b>closers.</b></p>
     <p class="subhead">Write a detail. Get a tailored warmline that is <b>YOU</b>.</p>
   </header>
@@ -522,7 +548,10 @@ cardsEl.addEventListener('input',e=>{const el=e.target;if(el.dataset.k===undefin
 cardsEl.addEventListener('click',async e=>{const t=e.target;if(t.dataset.ti!==undefined){rows[+t.dataset.ti].tone=t.dataset.tone;render();return;}if(t.dataset.go!==undefined)return generateOne(+t.dataset.go);if(t.dataset.copy!==undefined){navigator.clipboard&&navigator.clipboard.writeText(results[+t.dataset.copy]);t.textContent='copied';setTimeout(()=>t.textContent='copy',1200);}if(t.classList.contains('rm')){const i=+t.dataset.i;rows.splice(i,1);delete results[i];results=Object.fromEntries(Object.entries(results).map(([k,v])=>[k<i?k:k-1,v]));render();}});
 document.getElementById('add').onclick=()=>{rows.push({tone:'warm'});render();};
 function hasContent(r){return (r.name||'').trim()||(r.company||'').trim()||(r.detail||'').trim();}
-async function generateOne(i){if(left()<=0){refreshMeter();return;}const row=rows[i];if(!hasContent(row))return;const errEl=document.getElementById('err-'+i);if(errEl)errEl.textContent='';const btn=document.querySelector('[data-go="'+i+'"]');if(btn){btn.textContent='Writing...';btn.disabled=true;}try{const res=await fetch('/api/write',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({row:row,tone:TONES[row.tone||'warm'],offer:document.getElementById('offer').value.trim(),banned:BANNED})});if(!res.ok){let msg="Couldn't reach the writer. Try again.";try{const e=await res.json();if(e&&e.error)msg=e.error;}catch(_){}const err=new Error(msg);err.shown=msg;throw err;}const d=await res.json();results[i]=d.line;bumpUsed();loadGlobal();render();}catch(err){if(errEl)errEl.textContent=err.shown||"Couldn't reach the writer. Try again.";if(btn){btn.textContent='Write the line';btn.disabled=false;}}}
+async function generateOne(i){if(left()<=0){refreshMeter();return;}const row=rows[i];if(!hasContent(row))return;const errEl=document.getElementById('err-'+i);if(errEl)errEl.textContent='';const btn=document.querySelector('[data-go="'+i+'"]');if(btn){btn.textContent='Writing...';btn.disabled=true;}try{const res=await fetch('/api/write',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({row:row,tone:TONES[row.tone||'warm'],offer:document.getElementById('offer').value.trim(),banned:BANNED})});if(!res.ok){let msg="Couldn't reach the writer. Try again.";try{const e=await res.json();if(e&&e.error)msg=e.error;}catch(_){}const err=new Error(msg);err.shown=msg;err.capped=(res.status===429);throw err;}const d=await res.json();results[i]=d.line;bumpUsed();loadGlobal();render();}catch(err){if(errEl){if(err.capped){capCapture(errEl,err.shown);}else{errEl.textContent=err.shown||"Couldn't reach the writer. Try again.";}}if(btn){btn.textContent='Write the line';btn.disabled=false;}}}
+// Running out of budget is the moment someone is most interested. Instead of
+// showing them a dead end, ask for an email. Same moment, useful outcome.
+function capCapture(el,msg){el.textContent='';const box=document.createElement('div');box.className='cap-capture';const p=document.createElement('p');p.textContent=msg||"Warmline is resting. It hit today's ceiling.";const p2=document.createElement('p');p2.className='cap-sub';p2.textContent="Leave your email and I'll tell you when it's back.";const row=document.createElement('div');row.className='cap-row';const input=document.createElement('input');input.type='email';input.placeholder='you@example.com';input.className='cap-input';const b=document.createElement('button');b.type='button';b.className='cap-btn';b.textContent='Tell me';b.onclick=async()=>{const email=input.value.trim();if(!email||email.indexOf('@')<0){input.focus();return;}b.disabled=true;b.textContent='Sending...';try{await fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})});}catch(e){}box.textContent="Got it. I'll email you when Warmline is back.";};row.appendChild(input);row.appendChild(b);box.appendChild(p);box.appendChild(p2);box.appendChild(row);el.appendChild(box);}
 document.getElementById('all').onclick=async()=>{const btn=document.getElementById('all');btn.disabled=true;btn.textContent='Writing...';for(let i=0;i<rows.length;i++){if(hasContent(rows[i])&&left()>0)await generateOne(i);}btn.disabled=false;btn.textContent='Write all lines';if(Object.keys(results).length){document.getElementById('bear').classList.add('show');document.getElementById('pen').style.display='none';document.getElementById('doneLine').classList.add('show');}};
 document.getElementById('download').onclick=()=>{const lines=rows.map((r,i)=>results[i]?(r.name||'Prospect '+(i+1))+(r.company?' ('+r.company+')':'')+':\n'+results[i]+'\n':null).filter(Boolean);if(!lines.length){alert('Write a few warmlines first, then download.');return;}const blob=new Blob(['My Warmline(s)\n\n'+lines.join('\n')],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-warmline.txt';a.click();};
 document.getElementById('subBtn').onclick=async()=>{const email=document.getElementById('email').value.trim();if(!email||email.indexOf('@')<0)return;try{await fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})});}catch(e){}document.getElementById('subMsg').classList.add('show');document.getElementById('email').value='';};
