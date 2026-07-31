@@ -112,20 +112,35 @@ Tone: ${toneText}.
 This must read like one human talking to another human. Picture it: you just ran into this person at a park on a hot Thursday and you've got 20 seconds to say something real before the moment passes. Slightly caught off guard, completely genuine, zero rehearsed-pitch energy.
 
 Voice rules:
-- Write like you're texting a smart friend about something they made. Casual, direct, real.
-- Conversational looseness is GOOD. A slightly rambly sentence, an em-dash where a period "should" go, starting with "so" or "honestly" — these read as human. Polished-perfect reads as AI. Don't over-smooth it.
-- Contractions always. Plain everyday words over fancy ones — "got" not "obtained," "so" not "therefore."
+- Write the way you'd text a smart friend about something they made. Plain words, real sentences, contractions always.
+- Every sentence gets a subject. "I caught the error on your dashboard," never "Caught the error on your dashboard." Dropping the "I" reads like a telegram, not a person.
+- One sentence is usually enough. Add a second only if it says something the first didn't.
+- Stop when the point lands. Don't tack on another clause with "and" to soften the ending.
+- Say full words. "Congratulations," not "congrats." "Probably," not "prob."
 
-Hard rules:
-- Open with THEM, not me. Reference the detail naturally, like it genuinely stuck with you.
-- Sound like a specific human wrote it in 20 seconds because they actually noticed something — never like a template.
-- NEVER use these words or phrases (tell-tale AI/spam signs): ${banList}.
-- NEVER use "it's not X, it's Y" or "not just X, but Y" or "isn't about X, it's about Y" contrast constructions. Say the point straight.
-- NEVER use rule-of-three lists (e.g. "simple, fast, and human"). Pick one word, or write a real sentence.
-- No "I hope this email finds you well." No "I came across your profile." No "just wanted to reach out." No flattery clichés.
-- Don't announce what you're doing ("I noticed," "I saw") more than once, if at all — just say the thing.
-- One vivid specific detail beats three vague compliments.
-- 1-2 sentences MAX. Return ONLY the line — no quotes, no preamble, no sign-off.`;
+PUNCTUATION — this one is not negotiable:
+- Use NO em-dashes and NO en-dashes. Not one, anywhere in the line. Use a period or a comma instead.
+  An em-dash in a cold opener is the single loudest machine tell there is. If you find yourself
+  reaching for one, end the sentence and start a new one, or just use a comma.
+
+Never do these. They are the tells:
+- No comparative flattery you can't back up: "better than most," "tighter than most I see," "one of the few people who," "rare to see." You haven't seen the others and they know it.
+- No "more than I expected," "longer than I meant to," "than I'd like to admit." Formula.
+- No clichés of recognition: "hit close to home," "resonated," "struck a chord," "spot on," "nailed it," "food for thought," "made me think."
+- No offering to collaborate, meet, hop on a call, or "write it up together" unless the outreach reason above explicitly says so. Proposing to co-create with a stranger is presumptuous and instantly reads as a pitch.
+- No consultant vocabulary: "navigating," "structural," "failure modes," "unpack," "surface" as a verb, "landscape," "space," "ecosystem," "journey."
+- NEVER these words or phrases: ${banList}.
+- No "it's not X, it's Y" or "not just X, but Y" or "isn't about X, it's about Y." Say the point straight.
+- No rule-of-three lists ("simple, fast, and human"). Pick one word, or write a real sentence.
+- No "I hope this email finds you well." No "I came across your profile." No "just wanted to reach out."
+
+Shape:
+- Open with THEM. Reference the detail like it actually stuck with you.
+- Vary how you start. Don't default to "Your [thing]..." every time.
+- One vivid specific beats three vague compliments.
+- If you're guessing about them, don't. Only say what the detail actually supports.
+
+Return ONLY the line. No quotes, no preamble, no sign-off.`;
 
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
@@ -152,12 +167,26 @@ Hard rules:
     }
 
     const data = await r.json();
-    const line = (data.content || [])
+    let line = (data.content || [])
       .filter((b) => b.type === "text")
       .map((b) => b.text)
       .join("")
       .trim()
       .replace(/^["']|["']$/g, "");
+
+    // Belt and braces on the dash rule. The prompt forbids em/en dashes, but a
+    // model can still slip, and one dash undoes the whole "a human wrote this"
+    // effect. So we also strip them mechanically, which cannot slip.
+    line = line
+      // " word — word "  ->  " word, word "
+      .replace(/\s*[—–]\s*/g, ", ")
+      // don't leave ",," or ", ," behind
+      .replace(/,\s*,/g, ",")
+      // a comma right before end punctuation is never right
+      .replace(/,\s*([.!?])/g, "$1")
+      // collapse any double spaces the swap introduced
+      .replace(/\s{2,}/g, " ")
+      .trim();
 
     // Count it. Done inline, so there's no second network hop and no COUNT_URL
     // environment variable to configure or get wrong.
