@@ -53,7 +53,17 @@ def cut_girl(src, flat="#0f4d36", tol=46):
         mask |= (np.abs(a - smp).sum(axis=2) < tol)
     out = a.copy()
     out[mask] = target
-    return Image.fromarray(out.astype(np.uint8))
+    res = out.astype(np.float32)
+    # Darken her skin. Skin reads as the warm, mid-bright pixels (R noticeably
+    # above B, not the bright yellow laptop and not the teal outfit). Deepen
+    # those toward brown by dropping brightness and nudging red up, green down.
+    R,G,B = res[...,0],res[...,1],res[...,2]
+    val = (R+G+B)/3
+    skin = (~mask) & (R > B+8) & (val > 55) & (val < 150)
+    res[...,0][skin] = np.clip(R[skin]*0.82 + 10, 0,255)   # keep red, deepen
+    res[...,1][skin] = np.clip(G[skin]*0.66, 0,255)        # pull the green wash out
+    res[...,2][skin] = np.clip(B[skin]*0.70, 0,255)        # darker overall
+    return Image.fromarray(np.clip(res,0,255).astype(np.uint8))
 
 def green_card(src, out, W=1200, H=630):
     img = Image.new("RGB",(W,H),GREEN_DEEP)
