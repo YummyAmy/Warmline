@@ -53,6 +53,13 @@ def girl_cutout(src,tol=64):
     al=np.where(m,0,255).astype(np.uint8)
     al=np.asarray(Image.fromarray(al).filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(1.0)))
     im=Image.fromarray(np.dstack([a.astype(np.uint8),al]),"RGBA")
+    # the site lays a translucent green wash over her, which leaves the cutout
+    # looking flat once it is sitting on cream. Put the colour and contrast back.
+    from PIL import ImageEnhance
+    rgb=im.convert("RGB")
+    rgb=ImageEnhance.Color(rgb).enhance(1.0)
+    rgb=ImageEnhance.Contrast(rgb).enhance(1.0)
+    im=Image.merge("RGBA",(*rgb.split(),im.split()[3]))
     bb=im.getbbox()
     return im.crop(bb) if bb else im
 
@@ -79,15 +86,16 @@ def shadow(base,card,xy,blur=30,alpha=100,off=(12,18)):
     s.paste(Image.new("RGBA",card.size,(10,28,20,alpha)),(xy[0]+off[0],xy[1]+off[1]),card)
     base.alpha_composite(s.filter(ImageFilter.GaussianBlur(blur)))
 
-def hero(shot,out,W=1080,H=1080):
+def hero(shot,shot2,out,W=1080,H=1080):
     split=int(W*0.52)
     img=Image.new("RGBA",(W,H),GREEN_DEEP)
-    img.alpha_composite(marble_panel(split,H),(0,0))       # marble on the cream half
+    img.alpha_composite(marble_panel(split,H),(0,0))   # straight split, as before
     d=ImageDraw.Draw(img)
 
     M=68
-    d.text((M,150),"WARMLINE",font=font(MONO_B,26),fill=GREEN_DEEP)   # title, kept
-    fh=font(SERIF_B,54); y=210
+    d.text((M,132),"WARMLINE",font=font(MONO_B,40),fill=GREEN_DEEP)   # title, bolder
+    d.text((M,186),"WARM OUTREACH . HUMAN VOICE",font=font(MONO,20),fill=INK_SOFT)
+    fh=font(SERIF_B,54); y=238
     for ln in wrap(d,"Don't overthink it.",fh,split-M*2):
         d.text((M,y),ln,font=fh,fill=INK); y+=66
     for ln in wrap(d,"Just send it.",fh,split-M*2):
@@ -98,14 +106,14 @@ def hero(shot,out,W=1080,H=1080):
         d.text((M,y),ln,font=font(SERIF,25),fill=INK_SOFT); y+=36
 
     g=girl_cutout(shot)
-    gh=310; g=g.resize((int(g.width*gh/g.height),gh),Image.LANCZOS)
-    img.alpha_composite(g,(M-16,H-gh-190))                 # the girl, in the empty cream
+    gh=280; g=g.resize((int(g.width*gh/g.height),gh),Image.LANCZOS)
+    img.alpha_composite(g,(M-16,H-gh-196))                 # the girl, in the empty cream
 
-    d.text((M,H-140),"warmline",font=font(MONO,24),fill=INK_SOFT)
-    d.text((M,H-104),".dataaccordingtome.com",font=font(MONO,24),fill=INK_SOFT)
+    d.text((M,H-150),"warmline.dataaccordingtome.com",font=font(MONO,22),fill=INK_SOFT)
+    d.text((M,H-112),"YOUR FIRST 15 WARMLINES ARE ON US",font=font(MONO,21),fill=GREEN)
 
-    pw,ph=360,736
-    px,py=int(W*0.60),(H-ph)//2
+    pw,ph=452,924
+    px,py=int(W*0.52)+(W-int(W*0.52)-pw)//2,(H-ph)//2
     c=phone(shot2,pw,ph,crop_top=0.0)
     shadow(img,c,(px,py)); img.alpha_composite(c,(px,py))
     img.convert("RGB").save(out,"PNG",optimize=True); return out

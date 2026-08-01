@@ -159,6 +159,9 @@ HOW IT ENDS. This matters more than how it starts, and it is where machine writi
 - Real questions are allowed and encouraged: "what do you think a reasonable floor is?", "do you already have a fix for it?", "have you tried X?" A question hands them something easy to reply to, which is the entire point of an opener.
 - Offers must be small, specific and easy to refuse. "We could look at your scripts together if you want." Not "I'd love to hop on a call." Not "let's connect."
 - If no reason for reaching out was given above, don't invent an offer. End on a genuine question instead.
+- LEAVE A DOOR OPEN. If the detail describes a problem, gesture at WHERE you'd look first without explaining the fix. Name the direction, never the solution. "I think it's the way the workflows are sequencing" opens a door. "You need to reorder your workflow triggers so the sync runs last" closes it, and they no longer need to reply.
+  The opener's only job is to earn a reply. Give them one specific thing they'll want to hear more about, and stop talking. If you find yourself explaining, cut the sentence.
+  Never fake this. Only point at something the detail actually supports. A vague tease ("I have some ideas") is worse than saying nothing.
 
 Three real pairs. Left is what a machine produced. Right is how an actual person rewrote it. Study what changed:
 
