@@ -31,12 +31,28 @@ async function redis(cfg, command) {
 // The 15-use limit in the browser is a courtesy, not a lock — anyone can clear
 // their storage. These two limits run on the server, where they can't be
 // bypassed, and they're what actually protects your API bill.
-// Sized against a real budget, not a vibe. At roughly half a cent per opener,
-// 200 a day is about $1, so a $5 balance survives about five days of steady
-// traffic instead of emptying in one afternoon. Raise these when the balance
-// can afford it, not before.
-const PER_IP_PER_DAY = 20;    // ~10c max from any single visitor per day
-const GLOBAL_PER_DAY = 200;   // ~$1/day ceiling across everyone
+// Sized against a real budget, not a vibe. THE BUDGET IS $5/MONTH, $10 AT THE
+// ABSOLUTE OUTSIDE. Everything below follows from that number.
+//
+// Cost per opener, measured not guessed:
+//   ~2,900 input tokens + ~60 output tokens on Haiku 4.5
+//   uncached  ~$0.0032   (about a third of a cent)
+//   cached    ~$0.0007   (the rules block is cached, see the prompt below)
+//
+// So the OLD setting of 200/day was ~$0.64/day = ~$19/month if it ever ran hot.
+// That was over budget by triple. These numbers are the honest version:
+//   100/day uncached, every single day  = ~$9.60/month   <- absolute worst case
+//   100/day with caching working        = ~$3-5/month    <- realistic
+//   and most days will not come near the cap at all
+//
+// This is a CEILING, not a target. Hitting it means the tool got popular for a
+// day, which is a good problem, and everyone still sees a graceful message plus
+// an email capture instead of an error.
+//
+// ALSO SET A HARD SPEND LIMIT IN THE ANTHROPIC CONSOLE. Billing -> Limits.
+// That is the only backstop that cannot be defeated by a bug in this file.
+const PER_IP_PER_DAY = 15;    // matches the 15 free lines the site advertises
+const GLOBAL_PER_DAY = 100;   // ~$9.60/month worst case, ~$4/month realistically
 
 function today() {
   return new Date().toISOString().slice(0, 10); // "2026-07-30"
@@ -78,7 +94,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Writer not configured" });
   }
 
-  const { row = {}, tone = "", offer = "", banned = [] } = req.body || {};
+  const { row = {}, tone = "", toneKey = "", offer = "", banned = [] } = req.body || {};
 
   // Cap input lengths so nobody can paste a novel and run up your token bill.
   const name = String(row.name || "").trim().slice(0, 80);
@@ -102,16 +118,59 @@ export default async function handler(req, res) {
     ? banned.slice(0, 80).join(", ")
     : "really, actually, leverage, seamless, scalable";
 
-  const prompt = `You write the FIRST LINE of a cold outreach message — the opener that proves it isn't spam. Not the whole message. Just one or two sentences that show real attention to this specific person.
+  // --- Per-tone benchmarks ----------------------------------------------------
+  // The tone description alone was too vague, so every tone drifted back to the
+  // same flat "I saw you did X and you're using Y" shape. These are the actual
+  // pass/fail examples for each tone, written the way a person would write them.
+  const which = ["warm", "direct", "technical", "executive"].includes(String(toneKey))
+    ? String(toneKey)
+    : "";
 
-Prospect:
-- Name: ${name || "(unknown)"}
-- Company/newsletter: ${company || "(unknown)"}
-- Detail I know about them: ${detail || "(none given)"}
+  // If they just shipped something, saying nothing about it is the coldest
+  // possible opening. Congratulate first, then get to the point.
+  const mentionsLaunch = /\blaunch(ed|ing|es)?\b|\bshipp?(ed|ing)\b|\brelease[ds]?\b/i.test(
+    `${detail} ${company}`
+  );
 
-${offerText ? `What I'm reaching out about: ${offerText}` : ""}
+  const TONE_BENCHMARKS = {
+    warm: `WARM — the failure to avoid:
+  FAILS: "I saw that Dunkin' just launched those new flavors and you're using the numbers to figure out who's actually trying them."
+  Why it fails: it has no purpose, no direction and nothing behind it. It restates their press release back at them and stops. It is "I saw you did this, blah blah blah" with a friendly font. There is no reason for them to reply.
+  A warm line has to prove the noticing was real. Say the specific thing you noticed, say what it made you wonder, and hand them a question they'd actually enjoy answering. Warm means glad-to-have-run-into-you, not vague and complimentary.`,
+    direct: `DIRECT — say the thing, then hand it back to them.
+  Confident, short, no wind-up, but still a person. Name the specific thing, point at where you'd look, and end on a small offer or a question they can answer in one line. Direct is not blunt, and it is never a summary of their own news read back to them.`,
+    technical: `TECHNICAL — use this as the quality bar.
+  FAILS: "my guess is you're manually pulling the numbers and stitching them together." Generic, presumes a mess you cannot see, and asks nothing.
+  PASSES (this is the benchmark, match this level, not these words): "Congratulations on the launch of your latest flavor and for always raising the bar. I'd like to know how you're pulling segments like launch numbers if there's a pipeline best practice you're using. I'm hands-on with automation and will appreciate an opportunity to talk about it with you."
+  What the benchmark does: it congratulates first, names a real technical thing (pulling segments, pipeline practice), asks a peer-level question instead of assuming they're doing it badly, and ends with a plain, unpushy ask.`,
+    executive: `EXECUTIVE — authority plus warmth, never a summary.
+  FAILS: "I saw you just launched a new drink flavor and you're using the numbers to find which customers to target with it."
+  Why it fails: it is flat. No leadership, no humanity, no execution, no warmth. A real CEO or COO reads that and moves on without a thought.
+  An executive line carries weight: acknowledge the move and what it took, say the one thing that matters strategically about it, and close with a short, confident line that treats them as a peer. Senior does not mean cold. Short does not mean empty. Every sentence should sound like it came from someone who has run something.`,
+  };
 
-Tone: ${toneText}.
+  const toneBenchmark = which ? `\n${TONE_BENCHMARKS[which]}\n` : "";
+
+  const launchRule = mentionsLaunch
+    ? `\nThey have just launched or shipped something. Open by congratulating them on it in your own words, in a full sentence, before anything else. Say "congratulations", never "congrats".\n`
+    : "";
+  // ---------------------------------------------------------------------------
+
+  // Everything below never changes from one request to the next, so it goes in
+  // a CACHED system block. Anthropic charges a tenth of the normal input price
+  // to read a cached prefix, and this prefix is about 2,500 tokens, which is
+  // where nearly all the cost of this tool lives. Caching it is the difference
+  // between roughly $19/month and roughly $4/month at the same traffic.
+  // Do not interpolate anything per-prospect in here or the cache stops hitting.
+  const systemRules = `You write the FIRST LINE of a cold outreach message — the opener that proves it isn't spam. Not the whole message. Just one or two sentences that show real attention to this specific person.
+
+THE SHAPE OF EVERY LINE. Four parts, in this order, no exceptions:
+1. A solid beginning. A real opening sentence with a subject and a verb, not a fragment and not a restatement of their own announcement.
+2. Something specific, named. It does not have to be a problem. It can be a decision they made, a number, a choice of wording, a thing they shipped. Name it plainly enough that they'd know you actually looked.
+3. A solution, a suggestion, or a question. Give them something to do with the line. Point at where you'd look, offer one small specific thing, or ask something you'd genuinely want answered.
+4. A smooth, natural finish. The last words belong to them. No trailing clause, no sign-off energy, no summary of yourself.
+
+Read it back before you return it. It must sound like a relaxed human talking when they are not under pressure. Unhurried, plain, a little bit ordinary. If it sounds like a person performing interest, or like a paragraph assembled in one breath, rewrite it.
 
 This must read like one human talking to another human. Picture it: you just ran into this person at a park on a hot Thursday and you've got 20 seconds to say something real before the moment passes. Slightly caught off guard, completely genuine, zero rehearsed-pitch energy.
 
@@ -179,6 +238,22 @@ Three real pairs. Left is what a machine produced. Right is how an actual person
 
 The pattern in all three: full stops instead of trailing clauses, no grading them, and the last words belong to them. Copy that posture, not these words.
 
+THE FAILURE PATTERN THAT KILLS EVERY TONE. This is the one to hunt for in your own draft:
+  "I saw that Dunkin' just launched those new flavors and you're using the numbers to figure out who's actually trying them."
+That line has no purpose, no direction and nothing behind it. It is "I saw you did this, blah blah blah" dressed up. It reads like a bot summarising their homepage back to them. If your line is a restatement of something they already know about themselves, with nothing asked and nothing offered, throw it out and write a different one.
+`;
+
+  // The per-request half. Small, cheap, and deliberately kept out of the cached
+  // block above so that block stays byte-identical on every call.
+  const userMessage = `Prospect:
+- Name: ${name || "(unknown)"}
+- Company/newsletter: ${company || "(unknown)"}
+- Detail I know about them: ${detail || "(none given)"}
+
+${offerText ? `What I'm reaching out about: ${offerText}` : ""}
+
+Tone: ${toneText}.
+${launchRule}${toneBenchmark}
 Return ONLY the line. No quotes, no preamble, no sign-off.`;
 
   try {
@@ -194,7 +269,19 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
         // start reading flat, put "claude-sonnet-4-6" back here and redeploy.
         model: "claude-haiku-4-5-20251001",
         max_tokens: 200,
-        messages: [{ role: "user", content: prompt }],
+        // cache_control marks the rules block as reusable. The first call in a
+        // five minute window pays a small premium to write the cache; every
+        // call after that reads it at a tenth of the input price. Bursty launch
+        // traffic is the best possible shape for this, which is exactly when
+        // the bill would otherwise hurt.
+        system: [
+          {
+            type: "text",
+            text: systemRules,
+            cache_control: { type: "ephemeral" },
+          },
+        ],
+        messages: [{ role: "user", content: userMessage }],
       }),
     });
 

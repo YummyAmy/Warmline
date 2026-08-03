@@ -6,3 +6,9 @@ COWORK_HANDOFF.md
 .env.local
 node_modules
 index.html.backup
+
+# Social post source images and the scripts that generate them. None of this is
+# used by the site, so it doesn't belong on GitHub. The files stay on the Mac
+# for making posts, they just stop being pushed. share-card.png at the repo
+# root is NOT ignored, because that one is the real link preview image.
+social/

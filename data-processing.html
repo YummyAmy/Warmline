@@ -1,0 +1,305 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Data Processing Addendum. Warmline.</title>
+<meta name="description" content="The Data Processing Addendum for Warmline: roles, instructions, sub-processors, security measures and transfer mechanisms."/>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/><link rel="icon" href="favicon-32.png" sizes="32x32"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<meta name="robots" content="index,follow"/>
+<meta property="og:site_name" content="Warmline"/><meta property="og:title" content="Data Processing Addendum. Warmline."/><meta property="og:type" content="website"/><meta property="og:url" content="https://warmline.dataaccordingtome.com/data-processing.html"/><style>
+:root{--paper:#f3efe4;--paper-2:#ece6d6;--ink:#1b2a24;--ink-soft:#4a5a51;--green:#1d6e4f;--green-deep:#0f4d36;--gold:#e0a324;--gold-2:#ca8f13;--pink:#d85a7a;--line:#d8d1bf;--card:#fff;--err:#c0512f;}
+*{box-sizing:border-box}html,body{margin:0;padding:0;max-width:100%;overflow-x:clip}html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip}
+img{max-width:100%;display:block}a{color:inherit}
+.topbar-full{position:relative;z-index:3}.topbar-inner{max-width:1440px;margin:0 auto;padding:0 28px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:24px 0 0;gap:30px;width:100%;position:relative}.brandnav{display:flex;align-items:center;gap:36px}
+.nav{display:flex;gap:22px;font-size:14px;font-weight:600;align-items:center}.nav a{text-decoration:none;color:var(--ink-soft)}.nav a:hover{color:var(--green)}
+@media(max-width:760px){.nav{display:none}}
+.brand{background:var(--green-deep);color:var(--gold);font-family:Georgia,serif;font-weight:700;font-size:20px;text-decoration:none;padding:8px 18px;border-radius:12px;letter-spacing:.3px;cursor:pointer}
+.topright{display:flex;align-items:center;gap:14px}.tagr{font-family:Georgia,serif;font-size:20px;color:var(--gold);background:var(--green-deep);padding:8px 18px;border-radius:12px;font-weight:700;letter-spacing:.3px;text-decoration:none}
+.wrap{position:relative;z-index:2;max-width:820px;margin:0 auto;padding:0 28px}
+.lhead{text-align:center;padding:38px 0 6px}
+.lhead .eyebrow{font-family:'Courier New',monospace;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--green-deep);font-weight:700}
+.lhead h1{font-family:Georgia,serif;font-size:clamp(30px,5vw,48px);line-height:1.06;margin:14px 0 10px;font-weight:700;letter-spacing:-1px}
+.lhead .dates{font-family:'Courier New',monospace;font-size:12.5px;color:var(--ink-soft)}
+.lintro{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 26px;margin:26px 0 0;color:var(--ink-soft);font-size:15.5px}
+.lintro b{color:var(--ink)}
+.ldoc{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 60px -30px rgba(27,42,36,.35);padding:38px 40px;margin:22px 0 0}
+@media(max-width:600px){.ldoc{padding:26px 20px}.wrap{padding:0 16px}}
+.ldoc h2{font-family:Georgia,serif;font-size:24px;margin:36px 0 10px;line-height:1.25;scroll-margin-top:80px}
+.ldoc h2:first-child{margin-top:0}
+.ldoc h3{font-family:Georgia,serif;font-size:18px;margin:22px 0 8px}
+.ldoc p{color:var(--ink-soft);font-size:15.5px;margin:0 0 14px}
+.ldoc ul{color:var(--ink-soft);font-size:15.5px;margin:0 0 16px;padding-left:22px}
+.ldoc li{margin-bottom:8px}
+.ldoc b,.ldoc strong{color:var(--ink)}
+.ldoc a{color:var(--green);text-decoration:underline;text-underline-offset:2px}
+.ldoc hr{border:0;border-top:1px solid var(--line);margin:34px 0}
+.toc{background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin:0 0 30px}
+.toc .th{font-family:'Courier New',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);font-weight:700;margin-bottom:10px}
+.toc ol{margin:0;padding-left:20px;color:var(--ink-soft);font-size:14px}
+.toc li{margin-bottom:5px}.toc a{color:var(--ink-soft);text-decoration:none}.toc a:hover{color:var(--green)}
+.callout{border-left:3px solid var(--gold);background:var(--paper-2);padding:14px 18px;border-radius:0 10px 10px 0;margin:0 0 18px}
+.callout p{margin:0;font-size:15px}
+.tw{overflow-x:auto;margin:0 0 20px;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-soft)}
+th{font-family:'Courier New',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--green);background:var(--paper-2)}
+tr:last-child td{border-bottom:0}
+.lnav{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:26px 0 0}
+.lnav a{font-family:'Courier New',monospace;font-size:12px;letter-spacing:.5px;text-transform:uppercase;text-decoration:none;color:var(--ink-soft);border:1px solid var(--line);border-radius:9px;padding:8px 14px;background:var(--card);transition:.15s}
+.lnav a:hover{border-color:var(--green);color:var(--green)}
+.lnav a.on{background:var(--green);color:#fff;border-color:var(--green)}
+.foot{text-align:center;padding:50px 0 60px;margin-top:70px;border-top:1px solid var(--line);position:relative}
+.copyr{position:absolute;left:28px;bottom:24px;font-family:'Courier New',monospace;font-size:11px;color:var(--ink-soft)}
+@media(max-width:700px){.copyr{position:static;margin-top:20px}}
+.foot-cols{max-width:1000px;margin:0 auto 40px;padding:0 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:left}
+@media(max-width:760px){.foot-cols{grid-template-columns:1fr 1fr}}
+.fcol .fh{font-family:'Courier New',monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:14px;font-weight:700}
+.fcol a{display:block;color:var(--ink-soft);text-decoration:none;font-size:14px;margin-bottom:10px}
+.fcol a:hover{color:var(--green)}
+.foot-bottom{border-top:1px solid var(--line);padding-top:26px}
+.foot .amy{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+.foot .pw{font-family:'Courier New',monospace;font-size:13px;color:var(--ink-soft);margin-bottom:16px}
+.foot .pw b{color:var(--ink);font-weight:700}
+.socials{display:flex;gap:12px;justify-content:center}
+.socials a{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff}
+.socials svg{width:18px;height:18px}
+.s-li{background:#0a66c2}.s-gh{background:#1b2a24}.s-bmc{background:var(--gold-2)}
+@media(max-width:640px){.top{flex-wrap:wrap;gap:12px}.brand,.tagr{font-size:16px!important;padding:6px 12px!important}}
+</style></head><body>
+<span id="top"></span><div class="topbar-full"><div class="topbar-inner">
+  <div class="top">
+    <div class="brandnav"><a class="brand" href="/">Warmline</a>
+    <nav class="nav"><a href="/#how">How it works</a><a href="/#who">Who it is for</a><a href="/#faq">FAQ</a><a href="/#work">Business</a></nav></div>
+    <div class="topright"><a class="tagr" href="https://ameikpe.substack.com" target="_blank" rel="noopener">data according to me</a></div>
+  </div>
+</div></div>
+
+<div class="wrap">
+  <header class="lhead">
+    <div class="eyebrow">legal</div>
+    <h1>Data Processing Addendum</h1>
+    <div class="dates">Effective 6 August 2026 &nbsp;.&nbsp; Last updated 6 August 2026</div>
+  </header>
+
+  <div class="lnav">
+    <a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a><a href="/data-processing.html" class="on">Data processing</a>
+  </div>
+
+  <div class="lintro">
+    <p style="margin:0">The short version, which is not the legal version but is honest: <b>when you type someone else's name into Warmline, that is their personal data and you are the one responsible for it. We are your processor. We use it only to write your line, we do not keep it, and we do not use it for anything of our own.</b> This document says that in the language a data protection officer, a procurement team or a regulator will want to see, and it is automatically in force for anyone who uses Warmline for business purposes. You do not have to sign anything.</p>
+  </div>
+
+  <div class="ldoc">
+    <div class="toc">
+      <div class="th">Contents</div>
+      <ol>
+        <li><a href="#s1">Scope and how this becomes binding</a></li>
+        <li><a href="#s2">Definitions</a></li>
+        <li><a href="#s3">Roles of the parties</a></li>
+        <li><a href="#s4">Annex I: details of the processing</a></li>
+        <li><a href="#s5">Our obligations as processor</a></li>
+        <li><a href="#s6">Your obligations as controller</a></li>
+        <li><a href="#s7">Annex II: technical and organisational security measures</a></li>
+        <li><a href="#s8">Annex III: sub-processors</a></li>
+        <li><a href="#s9">International transfers and the Standard Contractual Clauses</a></li>
+        <li><a href="#s10">Assistance with data subject requests</a></li>
+        <li><a href="#s11">Personal data breaches</a></li>
+        <li><a href="#s12">Assistance with DPIAs and prior consultation</a></li>
+        <li><a href="#s13">Audits and information rights</a></li>
+        <li><a href="#s14">Deletion and return of data</a></li>
+        <li><a href="#s15">California, and other US state laws</a></li>
+        <li><a href="#s16">Liability</a></li>
+        <li><a href="#s17">Term, changes and order of precedence</a></li>
+        <li><a href="#s18">Contact</a></li>
+      </ol>
+    </div>
+
+    <h2 id="s1">1. Scope and how this becomes binding</h2>
+    <p>This Data Processing Addendum ("DPA") forms part of the <a href="/terms.html">Terms of Service</a> between <b>data according to me</b>, operator of Warmline at warmline.dataaccordingtome.com ("Processor", "we", "us"), and the person or organisation using the Service ("Controller", "you").</p>
+    <p>It applies automatically, without signature, whenever you use Warmline to process personal data relating to an identified or identifiable living individual and you are subject to the GDPR, the UK GDPR, the Swiss FADP, the CCPA as amended, or another data protection law that requires a written processor agreement.</p>
+    <p>If your organisation requires a countersigned copy, email <a href="mailto:amy@dataaccordingtome.com">amy@dataaccordingtome.com</a> with your entity name and address and we will execute this DPA in that form. The terms will not change.</p>
+
+    <h2 id="s2">2. Definitions</h2>
+    <p>"Data Protection Law" means all laws applicable to the processing under this DPA, including Regulation (EU) 2016/679 (GDPR), the UK GDPR and the Data Protection Act 2018, the Swiss Federal Act on Data Protection, and US state privacy laws including the CCPA as amended by the CPRA.</p>
+    <p>"Personal Data", "processing", "controller", "processor", "sub-processor", "data subject", "personal data breach" and "supervisory authority" have the meanings given in the GDPR.</p>
+    <p>"Customer Personal Data" means personal data contained in Input you submit to the Service, principally the prospect name, company or newsletter, the researched detail and the outreach reason.</p>
+    <p>"SCCs" means the Standard Contractual Clauses annexed to Commission Implementing Decision (EU) 2021/914. "UK Addendum" means the International Data Transfer Addendum issued by the UK Information Commissioner under s.119A of the Data Protection Act 2018.</p>
+    <p>"Service" has the meaning given in the Terms of Service.</p>
+
+    <h2 id="s3">3. Roles of the parties</h2>
+    <div class="callout"><p>Getting the roles right is the whole point of this document, so here they are in plain terms.</p></div>
+    <ul>
+      <li><b>You are the controller of Customer Personal Data.</b> You decide which person to write about, which of their details to submit, why you are contacting them, and whether to send the message. We have no say in any of that and no relationship with the person you name.</li>
+      <li><b>We are the processor of Customer Personal Data.</b> We process it only on your documented instructions, which for this Service consist of your act of submitting the Input and pressing generate, together with the Terms of Service and this DPA.</li>
+      <li><b>We are an independent controller of your own visitor data</b>, meaning your IP address, any email address you give us, any note you leave and our server logs. That processing is governed by our <a href="/privacy.html">Privacy Policy</a>, not by this DPA.</li>
+      <li>Each party independently complies with the obligations that apply to it in its role.</li>
+    </ul>
+
+    <h2 id="s4">4. Annex I: details of the processing</h2>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Detail</th></tr>
+      <tr><td>Subject matter</td><td>Generation of a one or two sentence outreach opening line from Input supplied by the Controller</td></tr>
+      <tr><td>Duration</td><td>The duration of the individual request. Processing ends when the response is returned.</td></tr>
+      <tr><td>Nature of processing</td><td>Transmission, transient in-memory storage, prompt construction, disclosure to the AI sub-processor for text generation, receipt and return of the generated text. No storage, no profiling, no enrichment, no analytics.</td></tr>
+      <tr><td>Purpose</td><td>Providing the Service to the Controller, and nothing else</td></tr>
+      <tr><td>Categories of data subjects</td><td>Individuals the Controller intends to contact ("prospects"), who may be professional contacts, hiring managers, founders, investors, editors, clients or similar</td></tr>
+      <tr><td>Categories of personal data</td><td>Name (capped at 80 characters); company or newsletter name (capped at 120); one free-text researched detail (capped at 600); the Controller's stated outreach reason (capped at 400). Any further personal data is present only because the Controller chose to type it in.</td></tr>
+      <tr><td>Special category data</td><td><b>None permitted.</b> The Controller is contractually prohibited from submitting special category data under Art. 9 GDPR, criminal offence data under Art. 10, government identifiers, financial account data, health data, biometric data, precise geolocation, or any data relating to a child.</td></tr>
+      <tr><td>Frequency</td><td>Continuous, on demand, initiated by the Controller</td></tr>
+      <tr><td>Retention by Processor</td><td><b>None.</b> Customer Personal Data is not written to any database, file or persistent log under our control. It exists only for the lifetime of the HTTP request.</td></tr>
+      <tr><td>Retention by sub-processors</td><td>The AI sub-processor retains inputs for a short period for trust and safety purposes under its own commercial terms, and does not use business API inputs or outputs for model training. The hosting sub-processor retains standard request metadata in server logs, typically for about 30 days.</td></tr>
+      <tr><td>Competent supervisory authority</td><td>Determined under Clause 13 SCCs by reference to the Controller's establishment or its EU representative</td></tr>
+    </table></div>
+
+    <h2 id="s5">5. Our obligations as processor</h2>
+    <p>We will:</p>
+    <ul>
+      <li><b>Process on instructions only.</b> Process Customer Personal Data solely on your documented instructions, including as to international transfers, unless required otherwise by law that applies to us. Where the law requires it, we will tell you before processing unless the law forbids that notice on important public interest grounds.</li>
+      <li><b>Flag unlawful instructions.</b> Tell you immediately if, in our opinion, an instruction infringes Data Protection Law.</li>
+      <li><b>Never use it for our own purposes.</b> Not retain, sell, share, use or disclose Customer Personal Data for any purpose other than performing the Service. We do not use it to train, fine-tune or evaluate any model, and we do not combine it with data from any other source.</li>
+      <li><b>Impose confidentiality.</b> Ensure that everyone authorised to process Customer Personal Data is bound by a duty of confidentiality.</li>
+      <li><b>Secure it.</b> Implement and maintain the technical and organisational measures in section 7, taking account of the state of the art, cost, and the risks to data subjects.</li>
+      <li><b>Control sub-processors.</b> Engage sub-processors only as set out in section 8, under written terms imposing obligations no less protective than these, and remain fully liable to you for their performance.</li>
+      <li><b>Assist you.</b> Assist with data subject requests (section 10), breach notification (section 11), DPIAs and prior consultation (section 12), taking account of the nature of the processing and the information available to us.</li>
+      <li><b>Delete on completion.</b> Delete Customer Personal Data at the end of the provision of the Service (section 14). In practice this is automatic, because we do not retain it in the first place.</li>
+      <li><b>Demonstrate compliance.</b> Make available the information necessary to demonstrate compliance with Art. 28 GDPR and allow for audits as described in section 13.</li>
+    </ul>
+
+    <h2 id="s6">6. Your obligations as controller</h2>
+    <p>You warrant and undertake that:</p>
+    <ul>
+      <li>You have a valid lawful basis under Art. 6 GDPR, or the equivalent under the law applicable to you, for submitting each item of Customer Personal Data and for the outreach you send afterwards. For business-to-business outreach this is usually legitimate interests, which requires you to have carried out and documented a balancing test.</li>
+      <li>You have provided the transparency information required by Arts. 13 and 14 GDPR to the data subject, or a valid exemption applies, and you can demonstrate that.</li>
+      <li>Your instructions to us comply with Data Protection Law and you are solely responsible for their accuracy, quality and legality.</li>
+      <li>You will not submit special category data, criminal offence data, government identifiers, financial account data, health data, biometric data, precise geolocation, any data relating to a child, or any confidential or trade secret information of a third party.</li>
+      <li>You did not obtain the Customer Personal Data unlawfully, including by scraping in breach of a site's terms or from a data breach.</li>
+      <li>You will comply with all marketing, anti-spam and platform rules applicable to messages you send, as set out in section 8 of the Terms of Service.</li>
+      <li>You will respond to data subjects yourself, since you are the controller and we hold nothing to search.</li>
+    </ul>
+
+    <h2 id="s7">7. Annex II: technical and organisational security measures</h2>
+    <p>We implement the following measures. They are stated as commitments, not aspirations, and we will not materially reduce them during the term.</p>
+    <div class="tw"><table>
+      <tr><th>Area</th><th>Measure</th></tr>
+      <tr><td>Data minimisation by design</td><td>Customer Personal Data is never written to a database. The most effective control against unauthorised access to stored data is not storing it, and that is the architecture.</td></tr>
+      <tr><td>Field limits</td><td>Every input field is length-capped server-side before any onward transmission, which bounds both cost and the volume of any single disclosure.</td></tr>
+      <tr><td>Encryption in transit</td><td>TLS on all connections, from the browser to our endpoints and from our endpoints to every sub-processor.</td></tr>
+      <tr><td>Encryption at rest</td><td>Applied by our hosting and key-value sub-processors to the limited data they hold (rate-limit keys, counters, subscriber emails, submitted notes).</td></tr>
+      <tr><td>Credential handling</td><td>API keys and storage tokens live only in server-side environment variables. They are never present in client-side code, which is why generation is proxied through our own endpoint rather than called from the page.</td></tr>
+      <tr><td>Access control</td><td>Administrative access to the hosting and storage consoles is limited to the operator, protected by strong unique credentials and multi-factor authentication.</td></tr>
+      <tr><td>Abuse and availability controls</td><td>Server-side per-IP and global daily rate limits, enforced where a client cannot bypass them, protecting against automated extraction and denial of service.</td></tr>
+      <tr><td>Input sanitisation</td><td>Submitted notes are stripped of markup on receipt and escaped again on render. User-submitted content is held in a pending queue and is not displayed publicly without manual review.</td></tr>
+      <tr><td>Logging discipline</td><td>Error logging records status codes and a truncated provider message. Prospect fields are not deliberately written to logs.</td></tr>
+      <tr><td>Retention limits</td><td>Rate-limit keys carry a 48-hour expiry set at creation, so IP-linked records self-delete without manual intervention.</td></tr>
+      <tr><td>Sub-processor diligence</td><td>Sub-processors are selected on the basis of published security posture, recognised certifications and contractual data protection terms, including no-training commitments for AI processing.</td></tr>
+      <tr><td>Incident response</td><td>A documented route for detection, assessment and notification, with the timelines in section 11.</td></tr>
+      <tr><td>Transparency</td><td>The application source is published openly, so the data handling described here can be independently verified rather than merely asserted.</td></tr>
+    </table></div>
+
+    <h2 id="s8">8. Annex III: sub-processors</h2>
+    <p>You give us general written authorisation to engage the sub-processors below, and to appoint replacements or additions subject to the notice and objection rights in this section.</p>
+    <div class="tw"><table>
+      <tr><th>Sub-processor</th><th>Function</th><th>Data processed</th><th>Location</th></tr>
+      <tr><td>Vercel Inc.</td><td>Hosting, edge network and serverless function execution</td><td>All request data in transit, including Customer Personal Data; request metadata in server logs</td><td>United States</td></tr>
+      <tr><td>Anthropic PBC</td><td>AI text generation</td><td>The generation prompt containing Customer Personal Data</td><td>United States</td></tr>
+      <tr><td>Upstash Inc. (Redis / Vercel KV)</td><td>Rate limiting, counters, subscriber list, pending notes</td><td>Visitor IP-derived keys, counters, subscriber emails, notes. <b>No Customer Personal Data.</b></td><td>United States</td></tr>
+    </table></div>
+    <p><b>Notice and objection.</b> We will give you at least thirty (30) days' notice before adding or replacing a sub-processor, by updating this page and, if you have given us an email address, by email. If you have a reasonable objection on data protection grounds, tell us within that period. We will work in good faith to address it. If we cannot, you may stop using the Service and, if you are on a paid plan, receive a pro-rata refund of prepaid fees for the unused period as your sole remedy.</p>
+
+    <h2 id="s9">9. International transfers and the Standard Contractual Clauses</h2>
+    <p>Customer Personal Data is processed in the United States. Where the transfer is from the EEA, the UK or Switzerland to a country without an adequacy decision, the following applies.</p>
+    <ul>
+      <li>The <b>SCCs</b> (Commission Implementing Decision (EU) 2021/914) are incorporated into this DPA by reference and take effect on your first use of the Service, with <b>Module Two (controller to processor)</b> applying.</li>
+      <li>Clause 7 (docking) is included. Clause 9 <b>Option 2 (general written authorisation)</b> applies, with the thirty-day notice period in section 8. Clause 11 does not include the optional independent dispute resolution body. Clause 17 <b>Option 1</b> applies with the law of <b>Ireland</b> governing the SCCs. Clause 18(b) designates the courts of <b>Ireland</b>.</li>
+      <li>Annex I is section 4 of this DPA. Annex II is section 7. Annex III is section 8.</li>
+      <li>For UK transfers, the <b>UK Addendum</b> is incorporated. Tables 1 to 3 are populated by sections 1, 4, 7 and 8 of this DPA, and in Table 4 the <b>Importer</b> may end the Addendum under Section 19.</li>
+      <li>For Swiss transfers, references in the SCCs to the GDPR are read as references to the FADP, "member state" is read so as not to deprive Swiss data subjects of the right to sue in Switzerland, and the Federal Data Protection and Information Commissioner is the competent authority.</li>
+      <li>Where a sub-processor is certified under the EU-US or UK-US Data Privacy Framework, that certification may be relied on in place of the SCCs for transfers to it.</li>
+    </ul>
+    <p>If the SCCs are invalidated, replaced or amended, the parties will implement the successor mechanism without undue delay, and this DPA is deemed amended accordingly.</p>
+    <p><b>Government access requests.</b> If we receive a legally binding request from a public authority for Customer Personal Data, we will notify you unless prohibited by law, challenge the request where there are reasonable grounds to consider it unlawful, and disclose only the minimum permissible. Given that we retain no Customer Personal Data, in practice there is nothing for us to produce in response to such a request.</p>
+
+    <h2 id="s10">10. Assistance with data subject requests</h2>
+    <p>Taking account of the nature of the processing, we will assist you by appropriate technical and organisational measures, insofar as possible, to fulfil your obligation to respond to requests to exercise data subject rights under Chapter III GDPR.</p>
+    <p>The honest practical position: <b>because we do not retain Customer Personal Data, we hold nothing to search, export, correct or delete on your behalf.</b> A request from a prospect for access or erasure is answered from your own records. If a prospect contacts us directly, we will not respond to them on the substance. We will tell them we are a processor holding no data about them, direct them to the controller, and notify you promptly if we can identify you.</p>
+    <p>We do not charge for this assistance.</p>
+
+    <h2 id="s11">11. Personal data breaches</h2>
+    <p>We will notify you without undue delay, and in any event within <b>48 hours</b>, after becoming aware of a personal data breach affecting Customer Personal Data.</p>
+    <p>The notification will describe, to the extent known: the nature of the breach and the categories and approximate number of data subjects and records affected; the likely consequences; the measures taken or proposed to address it and to mitigate adverse effects; and a contact point for further information. Where the full picture is not yet available, we will provide information in phases as it becomes available.</p>
+    <p>We will cooperate with you and take the reasonable steps you direct to assist in your investigation and in your own notifications to supervisory authorities and data subjects. Our notification is not an acknowledgement of fault or liability.</p>
+
+    <h2 id="s12">12. Assistance with DPIAs and prior consultation</h2>
+    <p>We will provide reasonable assistance with any data protection impact assessment or prior consultation with a supervisory authority that relates to your use of the Service, taking account of the nature of the processing and the information available to us. Sections 4, 7 and 8 of this DPA are drafted to give you most of what a DPIA needs without a separate request.</p>
+
+    <h2 id="s13">13. Audits and information rights</h2>
+    <p>We will make available all information reasonably necessary to demonstrate compliance with Art. 28 GDPR, including this DPA, our security measures in section 7, and the sub-processor list in section 8.</p>
+    <p>Where that information is not sufficient for your reasonable compliance needs, you may request an audit no more than once in any twelve month period, on at least thirty days' written notice, during business hours, subject to confidentiality obligations, and conducted so as not to disrupt the Service. You bear your own costs and our reasonable costs. You may request an additional audit following a confirmed personal data breach affecting Customer Personal Data or where a supervisory authority requires it.</p>
+    <p>Audits do not extend to the systems of sub-processors, for which we will instead provide such information about their security posture and certifications as we are permitted to share.</p>
+
+    <h2 id="s14">14. Deletion and return of data</h2>
+    <p>At your choice, on termination of the Service or on your request, we will delete or return all Customer Personal Data and delete existing copies, unless retention is required by a law applicable to us.</p>
+    <p>Because Customer Personal Data is not persisted, deletion is effectively complete at the end of each request and no separate deletion step is required. If you request written confirmation of this, we will provide it within thirty days.</p>
+    <p>Deletion of visitor data we hold as controller (your email address, notes, rate-limit keys) is handled under the <a href="/privacy.html">Privacy Policy</a>.</p>
+
+    <h2 id="s15">15. California, and other US state laws</h2>
+    <p>Where the CCPA as amended applies, we act as a <b>"service provider"</b> as defined in Cal. Civ. Code § 1798.140. We certify that we:</p>
+    <ul>
+      <li>do not sell or share Customer Personal Data, as "sell" and "share" are defined by the CCPA;</li>
+      <li>do not retain, use or disclose it for any purpose other than performing the Service specified in this DPA, including not for a commercial purpose of our own;</li>
+      <li>do not retain, use or disclose it outside the direct business relationship between you and us;</li>
+      <li>do not combine it with personal information received from another source, except as permitted by the CCPA;</li>
+      <li>will notify you if we determine we can no longer meet these obligations, and will allow you to take reasonable steps to stop and remediate any unauthorised use; and</li>
+      <li>will comply with applicable CCPA obligations and provide the same level of privacy protection the CCPA requires.</li>
+    </ul>
+    <p>You may take reasonable and appropriate steps to ensure we use Customer Personal Data consistently with your CCPA obligations. Where Virginia, Colorado, Connecticut, Utah, Texas, Oregon, Montana or another US state comprehensive privacy law applies, we act as a "processor" or "service provider" under that law and undertake the equivalent obligations it imposes.</p>
+
+    <h2 id="s16">16. Liability</h2>
+    <p>Each party's liability under or in connection with this DPA is subject to the limitations and exclusions of liability in the <a href="/terms.html">Terms of Service</a>, and any claim under this DPA counts towards the aggregate cap there. Nothing in this DPA limits any liability that cannot lawfully be limited, including a data subject's rights under Clause 12 of the SCCs or under Art. 82 GDPR.</p>
+    <p>Nothing in this section affects the rights of data subjects under the SCCs as third party beneficiaries.</p>
+
+    <h2 id="s17">17. Term, changes and order of precedence</h2>
+    <p>This DPA takes effect when you first use the Service and continues for as long as we process Customer Personal Data on your behalf.</p>
+    <p>We may update this DPA to reflect changes in law, in sub-processors, or in the Service. Material changes take effect thirty days after we publish them here, or immediately where required by law. If a change materially reduces your protections and you object, you may stop using the Service.</p>
+    <p><b>Order of precedence.</b> If there is a conflict, the SCCs prevail over this DPA, this DPA prevails over the Terms of Service, and the Terms of Service prevail over anything else, in each case only to the extent of the conflict and only in respect of the processing of Customer Personal Data.</p>
+    <p>If any provision is held invalid or unenforceable, it is severed and the remainder continues in force.</p>
+
+    <h2 id="s18">18. Contact</h2>
+    <p>Privacy and data protection enquiries, DPA countersignature requests, sub-processor objections, audit requests and breach correspondence go to:</p>
+    <p><b>data according to me</b><br/>Warmline<br/><a href="mailto:amy@dataaccordingtome.com">amy@dataaccordingtome.com</a><br/><a href="https://warmline.dataaccordingtome.com">warmline.dataaccordingtome.com</a></p>
+    <p>Please put "DPA" in the subject line. We aim to respond within thirty days, and sooner where the law or an incident requires.</p>
+  </div>
+
+  <div class="lnav">
+    <a href="/">&larr; Back to Warmline</a><a href="/terms.html">Terms of service</a><a href="/privacy.html">Privacy policy</a>
+  </div>
+</div>
+
+<footer class="foot"><div class="copyr">© 2026 Warmline. All rights reserved.</div>
+  <div class="foot-cols">
+    <div class="fcol">
+      <div class="fh">Product</div>
+      <a href="/#how">How it works</a><a href="/#who">Who it is for</a><a href="/#templates">Free tools</a><a href="/#faq">FAQ</a>
+    </div>
+    <div class="fcol">
+      <div class="fh">Resources</div>
+      <a href="https://ameikpe.substack.com" target="_blank" rel="noopener">Substack</a><a href="https://amyu.gumroad.com" target="_blank" rel="noopener">Trackers and templates</a><a href="https://github.com/YummyAmy" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <div class="fcol">
+      <div class="fh">Company</div>
+      <a href="https://www.upwork.com/freelancers/~01eb6718ba6ded7ab0" target="_blank" rel="noopener">Upwork</a><a href="/#loop">Newsletter</a>
+    </div>
+    <div class="fcol">
+      <div class="fh">Legal</div>
+      <a href="/terms.html">Terms of service</a><a href="/privacy.html">Privacy policy</a><a href="/data-processing.html">Data processing</a>
+    </div>
+  </div>
+  <div class="foot-bottom">
+  <div class="amy">Warmline</div>
+  <div class="pw">Amy 2026<br/>powered by <b>Claude</b></div>
+  <div class="socials">
+    <a class="s-li" href="https://www.linkedin.com/in/ame-u-395a25111/" aria-label="LinkedIn" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 11-.02 5 2.5 2.5 0 01.02-5zM3 9h4v12H3zM10 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21H18.6v-5.4c0-1.29-.02-2.95-1.8-2.95-1.8 0-2.08 1.4-2.08 2.85V21H10z"/></svg></a>
+    <a class="s-gh" href="https://github.com/YummyAmy" aria-label="GitHub" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49v-1.7c-2.78.62-3.37-1.22-3.37-1.22-.46-1.18-1.11-1.5-1.11-1.5-.9-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.9 1.57 2.34 1.12 2.91.85.09-.66.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.36 9.36 0 015 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9v2.82c0 .27.18.6.69.49A10.02 10.02 0 0022 12.25C22 6.58 17.52 2 12 2z"/></svg></a>
+    <a class="s-bmc" href="https://buymeacoffee.com/omomou/still-lack-caring" aria-label="Buy me a coffee" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 8h13v6a4 4 0 01-4 4H8a4 4 0 01-4-4V8zm13 1h2a2.5 2.5 0 010 5h-2V9zM5 5h11v1.5H5z"/></svg></a>
+  </div>
+  </div>
+</footer>
+</body></html>

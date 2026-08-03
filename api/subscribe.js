@@ -62,8 +62,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { email = "" } = req.body || {};
+  const { email = "", source = "" } = req.body || {};
   const clean = String(email).trim().toLowerCase().slice(0, 254);
+
+  // Where the signup came from, so the export tells you WHY someone joined.
+  // "waitlist" means they burned all 15 lines and asked for v2.0, which is the
+  // most valuable signal on the whole site. Anything else is the newsletter box.
+  const from = String(source).trim().slice(0, 20).replace(/[^a-z-]/gi, "");
 
   if (!looksLikeEmail(clean)) {
     return res.status(400).json({ error: "That doesn't look like an email" });
@@ -78,7 +83,8 @@ export default async function handler(req, res) {
 
   try {
     // HSET only overwrites the signup date if they're already on the list.
-    await redis(cfg, ["HSET", LIST_KEY, clean, new Date().toISOString()]);
+    const stamp = new Date().toISOString();
+    await redis(cfg, ["HSET", LIST_KEY, clean, from ? `${stamp} (${from})` : stamp]);
     return res.status(200).json({ ok: true });
   } catch {
     return res.status(200).json({ ok: true, storage: "unavailable" });
