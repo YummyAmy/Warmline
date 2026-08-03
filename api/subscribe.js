@@ -30,6 +30,33 @@ async function redis(cfg, command) {
 
 const LIST_KEY = "warmline:subscribers";
 
+// Abuse guard. This endpoint had none, so a script could hammer it all day:
+// junk in the list, and every hit burns an Upstash command, which IS billable
+// on pay-as-you-go. Ten a day per address is far more than a real person needs.
+const PER_IP_PER_DAY = 10;
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function clientIp(req) {
+  const fwd = req.headers["x-forwarded-for"];
+  if (typeof fwd === "string" && fwd.length) return fwd.split(",")[0].trim();
+  return req.headers["x-real-ip"] || "unknown";
+}
+
+async function tooMany(cfg, req, tag) {
+  if (!cfg) return false;
+  try {
+    const key = `warmline:rl:${today()}:${tag}:${clientIp(req)}`;
+    const n = await redis(cfg, ["INCR", key]);
+    if (n === 1) await redis(cfg, ["EXPIRE", key, 172800]);
+    return n > PER_IP_PER_DAY;
+  } catch {
+    return false; // a Redis hiccup shouldn't block a real signup
+  }
+}
+
 // Deliberately simple. Real validation is whether the email bounces, not regex.
 function looksLikeEmail(s) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
@@ -79,6 +106,12 @@ export default async function handler(req, res) {
     // Storage not wired up yet. Say OK so the visitor isn't shown an error,
     // but flag it in the response so YOU can tell when testing.
     return res.status(200).json({ ok: true, storage: "not connected" });
+  }
+
+  if (await tooMany(cfg, req, "sub")) {
+    // Say OK rather than showing an error. A real person who double-clicked
+    // shouldn't see a failure, and a bot doesn't deserve a useful signal.
+    return res.status(200).json({ ok: true });
   }
 
   try {

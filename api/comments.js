@@ -33,6 +33,33 @@ async function redis(cfg, command) {
 const PENDING_KEY = "warmline:comments:pending";
 const APPROVED_KEY = "warmline:comments:approved";
 
+// Abuse guard. The LTRIM below already stops the queue growing without bound,
+// but nothing stopped a script filling your review queue with 500 junk notes
+// and burning Upstash commands doing it. Five notes a day per address is plenty.
+const PER_IP_PER_DAY = 5;
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function clientIp(req) {
+  const fwd = req.headers["x-forwarded-for"];
+  if (typeof fwd === "string" && fwd.length) return fwd.split(",")[0].trim();
+  return req.headers["x-real-ip"] || "unknown";
+}
+
+async function tooMany(cfg, req, tag) {
+  if (!cfg) return false;
+  try {
+    const key = `warmline:rl:${today()}:${tag}:${clientIp(req)}`;
+    const n = await redis(cfg, ["INCR", key]);
+    if (n === 1) await redis(cfg, ["EXPIRE", key, 172800]);
+    return n > PER_IP_PER_DAY;
+  } catch {
+    return false;
+  }
+}
+
 // Strip anything that looks like markup. The page also escapes on render,
 // but defence in depth is cheap here.
 function clean(s, max) {
@@ -82,6 +109,12 @@ export default async function handler(req, res) {
   if (!text) return res.status(400).json({ error: "Nothing to save" });
 
   if (!cfg) return res.status(200).json({ ok: true, storage: "not connected" });
+
+  if (await tooMany(cfg, req, "cmt")) {
+    // Look successful. The page has already optimistically shown their note,
+    // and a bot gets no useful feedback either way.
+    return res.status(200).json({ ok: true });
+  }
 
   try {
     const entry = JSON.stringify({ name, text, at: new Date().toISOString() });
