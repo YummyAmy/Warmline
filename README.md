@@ -1,11 +1,14 @@
 # Warmline
 
-**Human-tone cold outreach and messages.** Write one real detail about someone you want
+**Human-tone cold outreach and messages.** 
+
+Write one real detail about someone you want
 to reach, your name and their company name, and get back an opening line that is exactly like something you would say if you met the person. Not like a template or spam.
 
 Some cold outreaches are not read past the first line. And sometimes, it's because they don't sound real. A lot of people use AI and so many companies and business know that you're using AI, BUT nobody wants to rea something that is copy and paste from another LLM. That's where Warmline comes in. It writes your lines so that it leads with the *person*, their businesses and how they are doing. It's all about *them*. And it references something specific, and skips every tell-tale AI phrase like 
 ("I hope this email finds you well," "I came across your profile," and a long
 banned-words list baked in).
+
 Write one real detail about a prospect and get
 back an opening line tailored and personlized enough for you to work with. (AI fillers and words are banned).
 Built as a single self-contained page. Free to use for the first 15 Warmlines, and no signup.
