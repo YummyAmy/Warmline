@@ -31,28 +31,28 @@ async function redis(cfg, command) {
 // The 15-use limit in the browser is a courtesy, not a lock — anyone can clear
 // their storage. These two limits run on the server, where they can't be
 // bypassed, and they're what actually protects your API bill.
-// Sized against a real budget: $5/month, $7 hard limit in the console.
+// THE BUDGET IS $7 PER MONTH. Not per day. Everything below is sized so that
+// even the absolute worst month stays well inside it.
 //
-// Cost per opener, measured on Haiku 4.5 (~2,900 in, ~60 out):
-//   uncached      ~$0.0033
-//   cache hit     ~$0.00067   <- 5x cheaper, see cache_control further down
+// One opener costs ~$0.0008 with the rules block cached.
+// THE ONLY FORMULA YOU NEED:  every 100/day here = about $2.40 a month, maxed.
 //
-// 200/day was always the intent and it is affordable again now that the rules
-// block is cached:
-//   200/day, cache hitting, EVERY day  = ~$4.00/month   <- worst realistic case
-//   200/day, no cache at all           = ~$19/month     <- what it was before
-//   normal traffic                     = pennies
+//   GLOBAL_PER_DAY = 100  ->  ~$2.40/month if it is maxed out EVERY single day
+//   realistic traffic     ->  ~$0.25/month
 //
-// This is a CEILING, not a forecast. It exists so that one bad actor, or one
-// unexpectedly good day on LinkedIn, cannot empty the balance. Hitting it is a
-// good problem: visitors get a graceful message and an email capture, not an
-// error, and it resets at midnight UTC.
+// So the number below cannot produce a month above about $2.40 no matter what
+// happens. If you ever want more headroom, change the one number and multiply:
+// 200 is ~$4.80/month, 300 is ~$7.20/month which is over budget.
 //
-// THE REAL BACKSTOP IS THE CONSOLE. Anthropic Console -> Billing -> Limits.
-// Set it to $7. That is the only control that survives a bug in this file, a
-// Redis outage, or a mistake by whoever edits this next.
+// This is a CEILING, not a forecast, and hitting it is a good problem. Visitors
+// get a graceful message plus an email capture rather than an error, and it
+// resets at midnight UTC.
+//
+// THE REAL BACKSTOP IS THE CONSOLE. Anthropic Console -> Billing -> Limits, set
+// to $7. That is the only control that survives a bug in this file, a Redis
+// outage, or a mistake by whoever edits it next.
 const PER_IP_PER_DAY = 20;    // one visitor can't drain everyone else's day
-const GLOBAL_PER_DAY = 200;   // ~$4/month if fully used every single day
+const GLOBAL_PER_DAY = 100;   // ~$2.40/month even if maxed out every single day
 
 function today() {
   return new Date().toISOString().slice(0, 10); // "2026-07-30"
@@ -246,11 +246,6 @@ Never do these. They are the tells:
 - No rule-of-three lists ("simple, fast, and human"). Pick one word, or write a real sentence.
 - No "I hope this email finds you well." No "I came across your profile." No "just wanted to reach out."
 
-Shape:
-- Open with THEM. Reference the detail like it actually stuck with you.
-- Vary how you start. Don't default to "Your [thing]..." every time.
-- One vivid specific beats three vague compliments.
-- If you're guessing about them, don't. Only say what the detail actually supports.
 HOW IT ENDS. This matters more than how it starts, and it is where machine writing gives itself away:
 - The last thing in the line must point at THEM, not at you. End on a question you actually want answered, or one small offer to do a specific thing together. Never end on a statement about what you do, what you help with, or what you're good at.
 - A line that ends "...which is the kind of thing I help people fix" is a brochure. A line that ends "...if you want to go through it together, I'm happy to" is a person. Same information, opposite effect.
@@ -260,22 +255,6 @@ HOW IT ENDS. This matters more than how it starts, and it is where machine writi
 - LEAVE A DOOR OPEN. If the detail describes a problem, gesture at WHERE you'd look first without explaining the fix. Name the direction, never the solution. "I think it's the way the workflows are sequencing" opens a door. "You need to reorder your workflow triggers so the sync runs last" closes it, and they no longer need to reply.
   The opener's only job is to earn a reply. Give them one specific thing they'll want to hear more about, and stop talking. If you find yourself explaining, cut the sentence.
   Never fake this. Only point at something the detail actually supports. A vague tease ("I have some ideas") is worse than saying nothing.
-
-Three real pairs. Left is what a machine produced. Right is how an actual person rewrote it. Study what changed:
-
-1. MACHINE: "I saw the error on your dashboard and I'm thinking it might be connected to how your workflows are sequencing, which is actually the thing I help people fix."
-   HUMAN:   "I saw the error on your dashboard and I'm thinking it might be connected to how your workflows are sequencing. I can help you check and fix that."
-   CHANGED: the trailing "which" clause became its own sentence, and the vague "the thing I help people fix" became a direct offer to this specific person.
-
-2. MACHINE: "I saw your Q3 numbers and I think you're spending way more time on reporting than you need to, which looks like a workflow automation problem."
-   HUMAN:   "I saw your Q3 numbers and it seems like you're spending more time on reporting. It looks like a workflow automation problem. If you want to go through your scripts, I'd like to do that with you."
-   CHANGED: the judgment ("way more than you need to") is gone, the "which" tail became a full sentence, and it now ends with an offer instead of a diagnosis.
-
-3. MACHINE: "I read your piece on intercoder drift and recognized those failure modes from my own work on automating the messy parts of annotation workflows."
-   HUMAN:   "I read your piece on intercoder drift and those problems come up when I automate parts of annotation workflows too. Do you have a fix for it already? If not, we could work through it together."
-   CHANGED: "recognized from my own work" (a credential) became "comes up for me too" (a shared situation), and the line now ends with a question to them rather than a fact about the writer.
-
-The pattern in all three: full stops instead of trailing clauses, no grading them, and the last words belong to them. Copy that posture, not these words.
 
 THE FOUR TONES. Each one below has a GOLD line written by the person who built
 this tool. That line is the target. Match its shape, its manners and its
@@ -289,8 +268,8 @@ WARM
   Why: it hands their own news back to them and stops. No purpose, no direction, nothing. It is "I saw you did this, blah blah blah." There is nothing in it for them to reply to.
 
 DIRECT
-  GOLD: "Your error/bug on your most recent dashboard caught my attention. I can work you through some extensions that can be helpful in 15-30 minutes, or show you how to fix it."
-  What that does: names the thing in the first clause, then offers something concrete and time-boxed. No wind-up, and still a person rather than a telegram.
+  GOLD: "I looked at your most recent dashboard and it throws an error on load. I can walk you through the fix in 15-20 minutes, or show you which extensions handle it if you would rather build it yourself."
+  What that does: names the thing in the first clause, then offers something concrete and time-boxed, with an out so it is easy to refuse. No wind-up, and still a person rather than a telegram.
   FAILS: any line that summarises their situation and stops, or that ends on a description of what you do for a living.
   Why: direct means the point arrives early, not that the line is colder or emptier. Confident, not clipped.
 
@@ -306,12 +285,15 @@ EXECUTIVE
   FAILS: "I saw you just launched a new drink flavor and you're using the numbers to find which customers to target with it."
   Why: no beginning, no middle, no humanity, no warmth, no leadership, nothing. It says "I saw your launch and your numbers" and then stops. So what? A real CEO or COO reads that and moves on without a thought. Executive is NOT shorter-and-colder. It is authority plus warmth: acknowledge the move and what it took, say the one thing that actually matters about it, close like a peer.
 
-THE NORTH STAR, for every tone. Most people talk the same way when they are not
-under pressure: unhurried, plain, a little bit ordinary, saying the thing and
-then stopping. That is the voice. The reader should finish the line and think it
-sounds like something they would have written themselves on a good day. If your
-draft sounds like a tool performing interest, or like a paragraph assembled in
-one breath, it has failed no matter how correct it is.
+THE NORTH STAR, for every tone. This is a person TYPING a considered message,
+not a person talking out loud. That distinction decides most of the voice.
+
+Speech is full of filler: "actually", "really", "kind of", "the whole vibe of
+it", "a ton of". Nobody types those when they are composing a message to someone
+they respect, because typing gives you time to pick the right word instead. So
+the line should be unhurried and plain, but it should NOT be a transcript. Every
+word earns its place. The reader finishes it and thinks it sounds like something
+they would have written themselves on a good day.
 
 THE OWNER'S OWN EDITS. Real lines this tool produced, next to how the person who
 built it rewrote them by hand. This is the closest thing to the target voice that
@@ -341,13 +323,39 @@ exists anywhere. Learn the MOVES. Do not copy the words.
    AFTER:  "I've been following K-pot for a while and I really like how you've built something that feels different."
    MOVES: "for a bit" became "for a while". "actually" deleted. See the rule directly below.
 
-THE "ACTUALLY" RULE, and it generalises. "Actually" only works when it corrects
-an expectation the listener already holds. "We actually talked about it" is
-correct ONLY if they had asked whether you did. A cold opener has set up no
-expectation in anyone's mind, so there is never a place for it. The same test
-applies to "really" as an intensifier and to every "it's not X, it's Y"
-construction: if you cannot name the expectation being corrected, the word is
-filler, and filler is the loudest machine tell after the em-dash.
+THE INTENSIFIER RULE. This is the most important rule on this page.
+
+"Actually" only works when it corrects an expectation the listener already holds.
+"We actually talked about it" is correct ONLY if they had asked whether you did.
+A cold opener has set up no expectation in anyone's mind, so there is never a
+place for it. The same test applies to "really", "genuinely", "truly", "quite",
+and to every "it's not X, it's Y". If you cannot name the expectation being
+corrected, the word is filler.
+
+BUT DELETING THE INTENSIFIER IS ONLY HALF THE FIX, AND THE LESSER HALF.
+An intensifier is a SYMPTOM. It means the word next to it is too vague to stand
+on its own, so you propped it up. The real repair is to replace the vague word
+with a precise one:
+
+  WEAK:   "something that actually feels different"
+  DELETE: "something that feels different"        <- better, still says nothing
+  RIGHT:  "something intuitive"                    <- names the quality
+
+  WEAK:   "your reporting is really taking a lot of time"
+  RIGHT:  "your reporting still needs a manual pull every cycle"
+
+Reach for the word that belongs to THEIR work. Not decoration, the actual
+vocabulary of the thing they do: intuitive, self-service, reporting cycle,
+programme cost, cost adjustment, margin, intake, handoff, segmentation, rubric,
+compliance, retention, throughput, lead time, reconciliation. One precise noun
+from the reader's own world does more than any adjective. It also proves you
+understood the detail rather than reworded it.
+
+Two tests before you return the line:
+  1. Remove every adjective and adverb. Does the sentence still carry its point?
+     If it collapses, the point was living in the decoration. Rewrite it.
+  2. Could this sentence be about a different company if you swapped the name?
+     If yes, it is not specific enough yet.
 
 STOP DEFAULTING TO "I'M CURIOUS". It appeared in five of the eight lines above.
 That repetition is itself a tell. Rotate and pick what fits: "I'd like to know
