@@ -313,6 +313,63 @@ sounds like something they would have written themselves on a good day. If your
 draft sounds like a tool performing interest, or like a paragraph assembled in
 one breath, it has failed no matter how correct it is.
 
+THE OWNER'S OWN EDITS. Real lines this tool produced, next to how the person who
+built it rewrote them by hand. This is the closest thing to the target voice that
+exists anywhere. Learn the MOVES. Do not copy the words.
+
+1. BEFORE: "I watched how you're bringing Asian cuisine to K-pot with that service style, and it's the kind of thing that probably generates a ton of manual coordination behind the scenes, I'm curious whether you've thought about automating some of those order or prep scripts yet."
+   AFTER:  "I'd like to know whether you've thought about automating some of the order or prep scripts."
+   MOVES: "I watched" is surveillance. The entire middle clause was padding and invented speculation, so it went. "I'm curious whether" became "I'd like to know whether". "those" became "the". The trailing "yet" was deleted.
+
+2. BEFORE: "I saw how you're structuring Food Terminal around wholesale buyers, and I'm curious how you're pulling the repeat-order signals from that client base. I'm hands-on with automation scripts for that kind of segmentation and would like to talk through what you're doing."
+   AFTER:  "Hi, I studied how you're structuring Food Terminal around wholesale buyers, and I wanted to inquire about how you're pulling the repeat-order signals from your client base. I'm hands-on with automation scripts for segmentation and would like to talk through what you're doing."
+   MOVES: a plain "Hi," is welcome. "I saw how" became "I studied how". "I'm curious how" became "I wanted to inquire about how". "that client base" became "your client base". "that kind of segmentation" became "segmentation".
+
+3. BEFORE: "...the manual scheduling is eating up time you don't have to give."
+   AFTER:  "...the manual scheduling is eating up time that could be used for other processes."
+   MOVES: "time you don't have to give" is a stranger being dramatic about their life. Name the cost neutrally and point somewhere constructive.
+
+4. BEFORE: "...when those thresholds hit, whether you're using workflows or pulling those manually right now."
+   AFTER:  "...when thresholds hit, whether you're using workflows or pulling them manually."
+   MOVES: "those thresholds" became "thresholds". "pulling those" became "pulling them". "right now" deleted.
+
+5. BEFORE: "I saw your workflow around supplier intake... I can show you how to set that up in about twenty minutes."
+   AFTER:  "I looked up your workflow around supplier intake... I can show you how to set that up in 15-20 minutes."
+   MOVES: "I saw" became "I looked up". A vague spelled-out time became a numeric range.
+
+6. BEFORE: "I've been following K-pot for a bit and I really like how you've built something that actually feels different."
+   AFTER:  "I've been following K-pot for a while and I really like how you've built something that feels different."
+   MOVES: "for a bit" became "for a while". "actually" deleted. See the rule directly below.
+
+THE "ACTUALLY" RULE, and it generalises. "Actually" only works when it corrects
+an expectation the listener already holds. "We actually talked about it" is
+correct ONLY if they had asked whether you did. A cold opener has set up no
+expectation in anyone's mind, so there is never a place for it. The same test
+applies to "really" as an intensifier and to every "it's not X, it's Y"
+construction: if you cannot name the expectation being corrected, the word is
+filler, and filler is the loudest machine tell after the em-dash.
+
+STOP DEFAULTING TO "I'M CURIOUS". It appeared in five of the eight lines above.
+That repetition is itself a tell. Rotate and pick what fits: "I'd like to know
+how...", "I wanted to inquire about...", "I wanted to ask how...", "can we
+quickly discuss how...", "how are you handling...", or drop the preamble
+entirely and just ask the question.
+
+TIME IS ALWAYS NUMERIC AND USUALLY A RANGE. "15-20 minutes", "2-3 months",
+"20 minutes". Never "about twenty minutes", never "a few weeks".
+
+VERBS FOR NOTICING. Good: "I saw", "I noticed", "I read", "I looked at", "I
+looked up", "I studied", "I've been following". Never: "I watched", "I caught",
+"I spotted", "I clocked", "I came across".
+
+SAY "YOUR", NOT "THAT". "your client base", never "that client base". Cut "that
+kind of", "those", and "right now" anywhere the sentence survives without them.
+
+CLOSE ON SOMETHING WORTH HAVING, where you honestly have it. End by naming what
+the reader gets rather than what you want: "...and can have inputs that can save
+costs", "...this can make a difference in how you plan the season". Never bolt
+this on when you have nothing real to offer.
+
 THE FAILURE PATTERN THAT KILLS EVERY TONE. This is the one to hunt for in your own draft:
   "I saw that Dunkin' just launched those new flavors and you're using the numbers to figure out who's actually trying them."
 That line has no purpose, no direction and nothing behind it. It is "I saw you did this, blah blah blah" dressed up. It reads like a bot summarising their homepage back to them. If your line is a restatement of something they already know about themselves, with nothing asked and nothing offered, throw it out and write a different one.
@@ -387,6 +444,16 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
       .replace(/\s*(--+|[—–―‒−])\s*/g, ", ")
       // A dash opening the line leaves a stray comma at the front.
       .replace(/^\s*,\s*/, "")
+      // "actually" is on the banned list and STILL gets through, because the
+      // model reads it as harmless. It is not: it corrects an expectation the
+      // reader has never formed, so in a cold opener it is always filler.
+      // Deleting it is safe in every position, so delete it mechanically, the
+      // same way the dashes are handled. "that actually feels different"
+      // becomes "that feels different" and nothing else changes.
+      .replace(/\bactually\b,?\s*/gi, "")
+      // Same story for a vague spelled-out duration the model likes to reach
+      // for. Numeric ranges are the house style.
+      .replace(/\babout twenty minutes\b/gi, "15-20 minutes")
       // don't leave ",," or ", ," behind
       .replace(/,\s*,/g, ",")
       // a comma right before end punctuation is never right
@@ -394,6 +461,9 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
       // collapse any double spaces the swap introduced
       .replace(/\s{2,}/g, " ")
       .trim();
+
+    // Stripping a leading word can leave the line starting in lower case.
+    if (line) line = line.charAt(0).toUpperCase() + line.slice(1);
 
     // Count it. Done inline, so there's no second network hop and no COUNT_URL
     // environment variable to configure or get wrong.
