@@ -61,6 +61,16 @@ export async function researchCompany(company) {
 // Guarded so it can't be abused as a free search proxy: it should only ever be
 // reachable behind the paid check in write.js in production.
 export default async function handler(req, res) {
+  // SAFETY GATE. This file is dormant today only because no search key is set.
+  // The day you add BRAVE_SEARCH_KEY for the paid tier, this route would go
+  // live to the whole internet with no rate limit and no paid check, and every
+  // stranger's POST would spend your search credits.
+  // So it needs a SECOND, deliberate switch. Set RESEARCH_ENABLED=true in
+  // Vercel only after write.js does the paid-status check described at the top
+  // of this file, and only after this route has its own rate limiting.
+  if (process.env.RESEARCH_ENABLED !== "true") {
+    return res.status(404).json({ error: "Not found" });
+  }
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   if (!searchConfig()) return res.status(200).json({ fact: null, status: "not configured" });
   const { company = "" } = req.body || {};

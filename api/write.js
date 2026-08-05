@@ -34,15 +34,19 @@ async function redis(cfg, command) {
 // THE BUDGET IS $7 PER MONTH. Not per day. Everything below is sized so that
 // even the absolute worst month stays well inside it.
 //
-// One opener costs ~$0.0008 with the rules block cached.
-// THE ONLY FORMULA YOU NEED:  every 100/day here = about $2.40 a month, maxed.
+// On Sonnet 5 at introductory pricing one opener is ~$0.0026, so:
 //
-//   GLOBAL_PER_DAY = 100  ->  ~$2.40/month if it is maxed out EVERY single day
-//   realistic traffic     ->  ~$0.25/month
+//   100/day, EVERY day, all month   ->  ~$7.90   (will not happen, see below)
+//   launch day, ~100 lines          ->  ~$0.26
+//   150 subscribers, normal month   ->  ~$1.00
 //
-// So the number below cannot produce a month above about $2.40 no matter what
-// happens. If you ever want more headroom, change the one number and multiply:
-// 200 is ~$4.80/month, 300 is ~$7.20/month which is over budget.
+// THE CAP IS NOT WHAT PROTECTS THE BUDGET. The $5 limit in the Anthropic console
+// is. It is a hard stop: at $5 the API starts refusing and cannot bill further.
+// The cap below exists so a single strange day cannot eat the whole month's
+// allowance in an afternoon and leave the tool dead for three weeks.
+//
+// 100/day is set for launch: 10 readers each generating and rewriting ~10 times
+// fits comfortably, and at ~$0.26 that day costs almost nothing.
 //
 // This is a CEILING, not a forecast, and hitting it is a good problem. Visitors
 // get a graceful message plus an email capture rather than an error, and it
@@ -218,7 +222,7 @@ Voice rules:
 - Every sentence gets a subject. "I saw the error on your dashboard," never "Saw the error on your dashboard." Dropping the "I" reads like a telegram, not a person.
 - Use ordinary verbs for noticing. "I saw," "I read," "I noticed." NOT "I caught," "I spotted," "I clocked," "I came across." The fancy verb is you performing attentiveness instead of paying it.
 - Hedge like a person who is guessing, because you are. You have one detail and nothing else. "I think it's," "looks like," "my guess is," "might be." A real person who half-knows something says so.
-- One sentence is usually enough. Add a second only if it says something the first didn't.
+- LENGTH: two to four sentences, whatever the detail can actually carry. A rich detail earns four. A thin one stays at two. A single sentence is almost always too little, because it leaves room for an observation and nothing else, and an observation on its own gives the reader nothing to reply to.
 - Stop when the point lands. Don't tack on another clause with "and" to soften the ending.
 - NEVER end with a trailing "which" clause. Not ", which is the thing I help with," not ", which looks like a process problem," not ", which is why I'm writing." That comma-and-which tail is the loudest machine rhythm there is. If the second thought is worth having, give it a full stop and its own sentence. Two clean sentences always beat one that keeps going.
 - Full stops are free. Use them. A line that breathes reads like speech; a line held together by commas reads like a paragraph generated in one exhale.
@@ -243,6 +247,7 @@ Never do these. They are the tells:
 - NEVER these words or phrases, no exceptions, not even buried mid-sentence: ${banList}.
   Before you return anything, reread your line once and check it against that list word by word. If one is in there, rewrite the line. This gets missed more than any other rule here.
 - No "it's not X, it's Y" or "not just X, but Y" or "isn't about X, it's about Y." Say the point straight.
+  This includes the quieter version of the same move: "the constraint is your fulfillment cycle RATHER THAN your reach", "it's less about A and more about B", "X, not Y". Every one of these props up a weak point by contrasting it with something nobody proposed. Name the thing you mean and stop.
 - No rule-of-three lists ("simple, fast, and human"). Pick one word, or write a real sentence.
 - No "I hope this email finds you well." No "I came across your profile." No "just wanted to reach out."
 
@@ -280,20 +285,25 @@ TECHNICAL
   Why: "my guess is you're manually pulling" is a stranger assuming they work badly, from one sentence of evidence. That is generic, not technical, and it asks nothing. Technical means asking about method as an equal. Never diagnose them.
 
 EXECUTIVE
-  GOLD: "I saw some of your Q3 numbers, and I believe I can halve your reporting time and expenses."
-  What that does: short, specific, carries a claim worth answering, and treats the reader as someone who decides things.
+  GOLD: "Congratulations on the growth, Nathan. Small teams scaling plant sales usually hit fulfillment before they hit demand, and the fix tends to sit in the sequencing. I've built that pipeline before and would be glad to walk you through it."
+  What that does, and this is the whole shape of the tone: a warm human opening that acknowledges what they pulled off, then a confident READ of their situation based on how this normally goes, then a concrete offer from someone who has done it. Diagnosis and a clear offer. Not a summary, not a bare question.
+  ALSO GOLD, shorter: "I saw some of your Q3 numbers, and I believe I can halve your reporting time and expenses."
+  What that does: carries a claim worth answering and treats the reader as someone who decides things.
   FAILS: "I saw you just launched a new drink flavor and you're using the numbers to find which customers to target with it."
   Why: no beginning, no middle, no humanity, no warmth, no leadership, nothing. It says "I saw your launch and your numbers" and then stops. So what? A real CEO or COO reads that and moves on without a thought. Executive is NOT shorter-and-colder. It is authority plus warmth: acknowledge the move and what it took, say the one thing that actually matters about it, close like a peer.
 
-THE NORTH STAR, for every tone. This is a person TYPING a considered message,
-not a person talking out loud. That distinction decides most of the voice.
+THE NORTH STAR, for every tone: natural, smooth, human.
 
-Speech is full of filler: "actually", "really", "kind of", "the whole vibe of
-it", "a ton of". Nobody types those when they are composing a message to someone
-they respect, because typing gives you time to pick the right word instead. So
-the line should be unhurried and plain, but it should NOT be a transcript. Every
-word earns its place. The reader finishes it and thinks it sounds like something
-they would have written themselves on a good day.
+Not stiff, not formal, not a transcript of someone thinking out loud either.
+The person writing this had a moment to choose their words, so they chose good
+ones. That is the only difference between this and speech. It does not make the
+line colder or more written, it makes it smoother, because the filler that
+carries no meaning got replaced by a word that does.
+
+Read the finished line aloud. If any part of it makes you stumble, or sounds
+like it is performing interest, it is not there yet. The reader should finish it
+and think it sounds like something they would have written themselves on a good
+day.
 
 THE OWNER'S OWN EDITS. Real lines this tool produced, next to how the person who
 built it rewrote them by hand. This is the closest thing to the target voice that
@@ -357,6 +367,33 @@ Two tests before you return the line:
   2. Could this sentence be about a different company if you swapped the name?
      If yes, it is not specific enough yet.
 
+GIVE THEM SOMETHING TO WORK WITH. NEVER SEND A BARE QUESTION.
+
+Almost nobody writes to a stranger purely to find something out. A line whose
+entire payload is "I saw X, and I'd like to know Y" has asked the reader to do
+all the work and has offered nothing back. It reads like research, not outreach,
+and it is the most common way these lines fail.
+
+So every line must carry substance, and there is an order of preference:
+
+  BEST. A point of view. Something you have worked out that they had not
+  considered: a read on where the constraint really sits, a gap in the method, an
+  angle worth testing. Example, on a survey about winged pad reception across age
+  groups: "have you thought about surveying women with heavier flow?" That single
+  question contributes an IDEA. It shows you thought about their problem rather
+  than about your pitch, and it is worth replying to on its own merits.
+
+  WHEN THE DETAIL WON'T SUPPORT A POINT OF VIEW: a specific question PLUS a
+  concrete offer. "I'd like to know how you're handling the time gaps" is only
+  half a line. Finish it: "...I've dealt with the same gaps on archived sets and
+  can show you how we bridged them, if that's useful."
+
+  NEVER: an observation and a question with nothing given back.
+
+Do not invent a point of view the detail cannot support. A hollow insight is
+worse than an honest question with a real offer attached. If you only have
+enough to ask, ask well and bring something to the table alongside it.
+
 STOP DEFAULTING TO "I'M CURIOUS". It appeared in five of the eight lines above.
 That repetition is itself a tell. Rotate and pick what fits: "I'd like to know
 how...", "I wanted to inquire about...", "I wanted to ask how...", "can we
@@ -405,10 +442,26 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        // Haiku costs about a third of Sonnet for this job. If the openers ever
-        // start reading flat, put "claude-sonnet-4-6" back here and redeploy.
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 200,
+        // SONNET, on purpose. Every failure in this tool has been an
+        // instruction-following failure, not a knowledge one, and this prompt is
+        // ~5,600 tokens of layered rules. Sonnet holds them; Haiku drops the
+        // quiet ones.
+        //
+        // Cost per line, with the rules block cached:
+        //   Haiku 4.5                        ~$0.0013
+        //   Sonnet 5, intro to 31 Aug 2026   ~$0.0026
+        //   Sonnet 5, from 1 Sept 2026       ~$0.0039   (list price returns to $3/$15)
+        //
+        // SEPTEMBER IS A REAL STEP UP. Around 1 Sept, check the spend. If it has
+        // moved more than you like, put "claude-haiku-4-5-20251001" back on this
+        // line and redeploy. That single swap cuts the bill by two thirds and
+        // nothing else needs to change.
+        model: "claude-sonnet-5",
+        // Headroom, not a target. Lines are now 2-4 sentences, and four long
+        // ones can reach ~140 tokens. At 200 a wordy line could be cut off
+        // mid-sentence, which looks broken. Output is billed on what is actually
+        // produced, so unused headroom costs nothing.
+        max_tokens: 300,
         // cache_control marks the rules block as reusable. The first call in a
         // five minute window pays a small premium to write the cache; every
         // call after that reads it at a tenth of the input price. Bursty launch

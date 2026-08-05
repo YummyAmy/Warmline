@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# The API routes are for the tool itself, not for search engines. Keeping them
+# out of the index also keeps them out of casual view.
+Disallow: /api/
+
+Sitemap: https://warmline.dataaccordingtome.com/sitemap.xml
