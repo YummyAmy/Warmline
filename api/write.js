@@ -55,8 +55,13 @@ async function redis(cfg, command) {
 // THE REAL BACKSTOP IS THE CONSOLE. Anthropic Console -> Billing -> Limits, set
 // to $7. That is the only control that survives a bug in this file, a Redis
 // outage, or a mistake by whoever edits it next.
-const PER_IP_PER_DAY = 20;    // one visitor can't drain everyone else's day
-const GLOBAL_PER_DAY = 100;   // ~$2.40/month even if maxed out every single day
+// PER_IP must sit comfortably ABOVE the 15 free lines the site promises, or a
+// visitor gets refused before they have spent what they were offered. Rewrites
+// are full requests too, so 20 was too tight: it is what silently blocked
+// testing on 5 Aug. 25 leaves real headroom and is still only ~$0.07 a day from
+// any single person.
+const PER_IP_PER_DAY = 25;
+const GLOBAL_PER_DAY = 100;   // see the arithmetic above, on Sonnet
 
 function today() {
   return new Date().toISOString().slice(0, 10); // "2026-07-30"
