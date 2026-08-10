@@ -458,7 +458,7 @@ a.uc-link{text-decoration:none;border-color:var(--green)}a.uc-link h4{color:var(
       </div>
       <div class="row-actions"><button class="btn btn-go" id="exGo">Write the line</button></div>
       <div class="result is-example" id="exResult" hidden><div class="res-body"><p id="exLine"></p></div></div>
-      <div class="demo-foot">That is the whole tool. Your turn, with someone you actually want to reach.</div>
+      <div class="demo-foot">That's it. Your turn, with someone or a business you want to reach.</div>
     </div>
     <div id="cards"></div>
     <div class="bottom"><button class="btn-ghost" id="add">+ Add another prospect</button><button class="btn-all" id="all">Write all lines</button><button class="btn-ghost" id="download">Download results</button></div>
@@ -646,10 +646,10 @@ const EXAMPLE={
   name:'Janet', company:'Chinet',
   detail:'New cup redesign, the lid rim looks reshaped',
   lines:{
-    warm:"Janet, congratulations on the new cup redesign. I noticed the lid rim looks like it's been reshaped for a better grip, which is a small thing most companies skip. Was that driven by customer complaints about spills, or more of an internal usability push?",
-    direct:"Janet, I looked at the new cup and the lid rim has clearly been reshaped for grip. If you want to know whether it is cutting spill complaints, I can show you how to read that out of your returns data in 15-20 minutes, or point you at the setup so your team runs it themselves.",
-    technical:"Congratulations on the cup redesign, Janet. I'd like to know how you are measuring the grip change, whether that is complaint volume by SKU or something you are catching in returns coding before it reaches support. I've built the return-reason pipelines for that and would be glad to compare notes on where you pull the signal.",
-    executive:"Congratulations on getting the redesign out, Janet. A rim change that small usually shows up in returns and repeat orders long before it reaches reviews, and most teams read it a quarter late. I've built the reporting that catches it early and would be glad to walk you through it."
+    warm:"Hey Janet, congratulations on the new cup redesign. I noticed the lid rim looks like it's been reshaped for a better grip, which is a small thing most companies skip. Was that driven by customer complaints about spills, or more of an internal usability push?",
+    direct:"Janet, I looked at the new cup and the lid rim has been reshaped for grip. If you want to know whether it is cutting spill complaints, I can show you how to read that out of your returns data in 15-20 minutes, or point you at the setup so your team runs it themselves.",
+    technical:"Congratulations on the cup redesign, Janet. I'd like to know how you are measuring the grip change. Was it by complaint volume by SKU or something you caught in returns coding before it reached support? I've built some return-reason pipelines and would be glad to compare notes on where you pull the signal.",
+    executive:"Congratulations on getting the redesign out, Janet. A rim change that small shows up in returns and repeat orders, and this is before it reaches reviews, and most teams read it late. I've built the reporting that catches it early and would be glad to walk you through it."
   }
 };
 function curTone(i){return (rows[i]&&rows[i].tone)||'warm';}
