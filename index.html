@@ -60,9 +60,21 @@ h1 .g{color:var(--gold-2)}
 .tryex-b{flex-shrink:0;background:var(--green-deep);color:var(--paper);border:0;border-radius:9px;padding:10px 17px;font-size:13.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:.15s}
 .tryex-b:hover{background:var(--green)}
 .tryex.done{display:none}
+.democard{background:var(--paper);border:1px dashed var(--gold-2);border-radius:14px;padding:20px;margin-bottom:18px;animation:pop .35s ease}
+.democard .tag{color:var(--gold-2)}
+.democard .rm{background:none;border:0;color:var(--ink-soft);font-size:12px;text-decoration:underline;cursor:pointer;font-family:inherit}
+/* Divs dressed as inputs. Nothing here is editable, on purpose. */
+.fake{width:100%;padding:13px 14px;font-size:15px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:9px;min-height:47px;font-family:inherit}
+.grid2 .fake{margin:0}
+.democard .fake+.fake,.democard .grid2+.fake{margin-top:9px}
+.fake.typing::after{content:'|';color:var(--green);animation:cursor 1s steps(1) infinite}
+.democard .tone{cursor:pointer}
+#exGo.nudge{box-shadow:0 0 0 0 rgba(224,163,36,.8);animation:nudge 1.1s ease-out 2}
+@keyframes nudge{0%{box-shadow:0 0 0 0 rgba(224,163,36,.85)}100%{box-shadow:0 0 0 18px rgba(224,163,36,0)}}
 .result.is-example{background:#14412f;border:1px dashed #4c8a70}
-.ex-flag{display:block;font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
-@media(max-width:520px){.tryex{padding:12px 14px}.tryex-t{font-size:13px}.tryex-b{width:100%}}
+.demo-foot{margin-top:14px;font-family:'Courier New',monospace;font-size:12px;color:var(--ink-soft);text-align:center}
+@media(prefers-reduced-motion:reduce){#exGo.nudge{animation:none}.fake.typing::after{animation:none}}
+@media(max-width:520px){.tryex{padding:12px 14px}.tryex-t{font-size:13px}.tryex-b{width:100%}.democard{padding:16px}}
 .l{display:block;font-size:12px;font-weight:600;letter-spacing:.4px;margin-bottom:7px;color:var(--ink-soft)}
 input.f,.offer{width:100%;padding:13px 14px;font-size:15px;font-family:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:9px;outline:none;transition:.15s}
 input.f:focus,.offer:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,110,79,.14)}
@@ -429,8 +441,24 @@ a.uc-link{text-decoration:none;border-color:var(--green)}a.uc-link h4{color:var(
          first. It costs nothing: the line is a real saved output, not a call
          to the writer, so it is instant and it never spends their 15. -->
     <div class="tryex" id="tryex">
-      <div class="tryex-t"><b>First time here?</b> See a finished one before you write your own.</div>
+      <div class="tryex-t"><b>First time here?</b> Watch one get written before you write your own.</div>
       <button class="tryex-b" id="exBtn">Show me an example &rarr;</button>
+    </div>
+    <!-- A sealed demo. The fields are divs, not inputs, so nothing here can be
+         typed into, no tone here calls the writer, and none of it touches the
+         visitor's 15. All four lines are real saved outputs. -->
+    <div class="democard" id="democard" hidden aria-live="polite">
+      <div class="card-top"><span class="tag">EXAMPLE, NOT ONE OF YOUR 15</span><button class="rm" id="exClose">hide</button></div>
+      <div class="grid2"><div class="fake" id="exName"></div><div class="fake" id="exCompany"></div></div>
+      <div class="fake" id="exDetail"></div>
+      <div class="ptone"><span class="l">Tone for this prospect</span>
+        <div class="tones" id="exTones">
+          <button class="tone on" data-ex="warm">Warm</button><button class="tone" data-ex="direct">Direct</button><button class="tone" data-ex="technical">Technical</button><button class="tone" data-ex="executive">Executive</button>
+        </div>
+      </div>
+      <div class="row-actions"><button class="btn btn-go" id="exGo">Write the line</button></div>
+      <div class="result is-example" id="exResult" hidden><div class="res-body"><p id="exLine"></p></div></div>
+      <div class="demo-foot">That is the whole tool. Your turn, with someone you actually want to reach.</div>
     </div>
     <div id="cards"></div>
     <div class="bottom"><button class="btn-ghost" id="add">+ Add another prospect</button><button class="btn-all" id="all">Write all lines</button><button class="btn-ghost" id="download">Download results</button></div>
@@ -604,19 +632,25 @@ const FREE_LIMIT=15;let rows=[{tone:"warm"},{tone:"warm"},{tone:"warm"}],results
 // node nobody could see: the request failed completely silently and the button
 // quietly reset to "Write the line". That is the bug where lines "refused to
 // generate" with no message. State survives a re-render; DOM references do not.
-let busy={},errors={},examples={};
+let busy={},errors={};
 
 // Fire-and-forget analytics. One Redis counter per event, no cookies, no third
 // party, nothing that follows anyone anywhere. Read them back at
 // /api/stats?key=YOUR_ADMIN_SECRET
 function track(event){try{fetch('/api/stats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event:event}),keepalive:true});}catch(e){}}
 
-// The worked example. This is a REAL saved output, so nothing is generated,
-// nothing is charged, and it can never come back weak on a first impression.
+// The worked example. Four REAL saved outputs, one per tone. Nothing here is
+// generated on demand, so it costs nothing, it is instant, and a first-time
+// visitor can never catch the tool on a bad line.
 const EXAMPLE={
-  name:'Janet', company:'Chinet', tone:'warm',
+  name:'Janet', company:'Chinet',
   detail:'New cup redesign, the lid rim looks reshaped',
-  line:"Janet, congratulations on the new cup redesign. I noticed the lid rim looks like it's been reshaped for a better grip, which is a small thing most companies skip. Was that driven by customer complaints about spills, or more of an internal usability push?"
+  lines:{
+    warm:"Janet, congratulations on the new cup redesign. I noticed the lid rim looks like it's been reshaped for a better grip, which is a small thing most companies skip. Was that driven by customer complaints about spills, or more of an internal usability push?",
+    direct:"Janet, I looked at the new cup and the lid rim has clearly been reshaped for grip. If you want to know whether it is cutting spill complaints, I can show you how to read that out of your returns data in 15-20 minutes, or point you at the setup so your team runs it themselves.",
+    technical:"Congratulations on the cup redesign, Janet. I'd like to know how you are measuring the grip change, whether that is complaint volume by SKU or something you are catching in returns coding before it reaches support. I've built the return-reason pipelines for that and would be glad to compare notes on where you pull the signal.",
+    executive:"Congratulations on getting the redesign out, Janet. A rim change that small usually shows up in returns and repeat orders long before it reaches reviews, and most teams read it a quarter late. I've built the reporting that catches it early and would be glad to walk you through it."
+  }
 };
 function curTone(i){return (rows[i]&&rows[i].tone)||'warm';}
 function resultFor(i){const r=results[i];return (r&&r[curTone(i)])||'';}
@@ -630,19 +664,52 @@ function refreshMeter(){const l=left();const u=document.getElementById('userLeft
 const cardsEl=document.getElementById('cards');
 function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function tonesHtml(i,sel){return TONE_KEYS.map(k=>'<button class="tone'+(sel===k?' on':'')+'" data-tone="'+k+'" data-ti="'+i+'">'+TONE_LABELS[k]+'</button>').join('');}
-function render(){cardsEl.innerHTML='';rows.forEach((row,i)=>{const out=resultFor(i);const d=document.createElement('div');d.className='card';d.innerHTML='<div class="card-top"><span class="tag">PROSPECT '+String(i+1).padStart(2,'0')+'</span>'+(rows.length>1?'<button class="rm" data-i="'+i+'">remove</button>':'')+'</div><div class="grid2"><input class="f" data-i="'+i+'" data-k="name" name="name-'+i+'" autocomplete="off" aria-label="Prospect name" placeholder="Name" value="'+esc(row.name||'')+'"><input class="f" data-i="'+i+'" data-k="company" name="company-'+i+'" autocomplete="off" aria-label="Company or newsletter" placeholder="Company / newsletter" value="'+esc(row.company||'')+'"></div><input class="f" data-i="'+i+'" data-k="detail" name="detail-'+i+'" autocomplete="off" aria-label="A researched detail" placeholder="A researched detail: a post they wrote, a launch, a milestone" value="'+esc(row.detail||'')+'"><div class="ptone"><span class="l">Tone for this prospect</span><div class="tones">'+tonesHtml(i,row.tone||'warm')+'</div></div><div class="row-actions"><button class="btn btn-go" data-go="'+i+'"'+(busy[i]?' disabled':'')+'>'+(busy[i]?'Writing...':(out?'Rewrite':'Write the line'))+'</button><span class="err" id="err-'+i+'">'+esc(errors[i]||'')+'</span></div>'+(out?'<div class="result'+(examples[i]?' is-example':'')+'"><div class="res-body">'+(examples[i]?'<span class="ex-flag">example, not one of your 15</span>':'')+'<p>'+esc(out)+'</p></div><div class="res-acts"><button class="copy" data-copy="'+i+'">copy</button><button class="copy" data-share="'+i+'">share</button></div></div>':'');cardsEl.appendChild(d);});}
+function render(){cardsEl.innerHTML='';rows.forEach((row,i)=>{const out=resultFor(i);const d=document.createElement('div');d.className='card';d.innerHTML='<div class="card-top"><span class="tag">PROSPECT '+String(i+1).padStart(2,'0')+'</span>'+(rows.length>1?'<button class="rm" data-i="'+i+'">remove</button>':'')+'</div><div class="grid2"><input class="f" data-i="'+i+'" data-k="name" name="name-'+i+'" autocomplete="off" aria-label="Prospect name" placeholder="Name" value="'+esc(row.name||'')+'"><input class="f" data-i="'+i+'" data-k="company" name="company-'+i+'" autocomplete="off" aria-label="Company or newsletter" placeholder="Company / newsletter" value="'+esc(row.company||'')+'"></div><input class="f" data-i="'+i+'" data-k="detail" name="detail-'+i+'" autocomplete="off" aria-label="A researched detail" placeholder="A researched detail: a post they wrote, a launch, a milestone" value="'+esc(row.detail||'')+'"><div class="ptone"><span class="l">Tone for this prospect</span><div class="tones">'+tonesHtml(i,row.tone||'warm')+'</div></div><div class="row-actions"><button class="btn btn-go" data-go="'+i+'"'+(busy[i]?' disabled':'')+'>'+(busy[i]?'Writing...':(out?'Rewrite':'Write the line'))+'</button><span class="err" id="err-'+i+'">'+esc(errors[i]||'')+'</span></div>'+(out?'<div class="result"><div class="res-body"><p>'+esc(out)+'</p></div><div class="res-acts"><button class="copy" data-copy="'+i+'">copy</button><button class="copy" data-share="'+i+'">share</button></div></div>':'');cardsEl.appendChild(d);});}
 cardsEl.addEventListener('input',e=>{const el=e.target;if(el.dataset.k===undefined)return;rows[+el.dataset.i][el.dataset.k]=el.value;});
 cardsEl.addEventListener('click',async e=>{const t=e.target;if(t.dataset.ti!==undefined){rows[+t.dataset.ti].tone=t.dataset.tone;render();return;}if(t.dataset.go!==undefined)return generateOne(+t.dataset.go);if(t.dataset.share!==undefined)return shareLine(+t.dataset.share,t);if(t.dataset.copy!==undefined){navigator.clipboard&&navigator.clipboard.writeText(resultFor(+t.dataset.copy));t.textContent='copied';setTimeout(()=>t.textContent='copy',1200);}if(t.classList.contains('rm')){const i=+t.dataset.i;rows.splice(i,1);delete results[i];results=Object.fromEntries(Object.entries(results).map(([k,v])=>[k<i?k:k-1,v]));render();}});
 document.getElementById('add').onclick=()=>{rows.push({tone:'warm'});render();};
-// Example: fill prospect 01, drop the saved line in, scroll it into view.
-document.getElementById('exBtn').onclick=()=>{
-  rows[0]={name:EXAMPLE.name,company:EXAMPLE.company,detail:EXAMPLE.detail,tone:EXAMPLE.tone};
-  results[0]=Object.assign({},results[0],{warm:EXAMPLE.line});
-  examples[0]=true;errors[0]='';
+// The example plays out the way a person would use it: the fields fill in, the
+// write button asks to be pressed, the line lands. Nothing calls the writer.
+const demo=document.getElementById('democard');
+const exGo=document.getElementById('exGo');
+const exResult=document.getElementById('exResult');
+const exLine=document.getElementById('exLine');
+const slow=!window.matchMedia||!matchMedia('(prefers-reduced-motion:reduce)').matches;
+let exTone='warm',exPlaying=false;
+function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+function typeInto(el,text){
+  if(!slow){el.textContent=text;return Promise.resolve();}
+  return new Promise(r=>{el.textContent='';el.classList.add('typing');let i=0;
+    const t=setInterval(()=>{el.textContent=text.slice(0,++i);
+      if(i>=text.length){clearInterval(t);el.classList.remove('typing');r();}},28);});
+}
+function showExLine(){exLine.textContent=EXAMPLE.lines[exTone];exResult.hidden=false;}
+async function playExample(){
+  if(exPlaying)return;exPlaying=true;
+  demo.hidden=false;exResult.hidden=true;exGo.textContent='Write the line';
   document.getElementById('tryex').classList.add('done');
-  render();track('example');
-  const c=cardsEl.firstElementChild;if(c)c.scrollIntoView({behavior:'smooth',block:'center'});
-};
+  demo.scrollIntoView({behavior:slow?'smooth':'auto',block:'center'});
+  await wait(slow?350:0);
+  await typeInto(document.getElementById('exName'),EXAMPLE.name);
+  await typeInto(document.getElementById('exCompany'),EXAMPLE.company);
+  await typeInto(document.getElementById('exDetail'),EXAMPLE.detail);
+  await wait(slow?260:0);
+  exGo.classList.add('nudge');
+  await wait(slow?1500:0);
+  exGo.classList.remove('nudge');exGo.textContent='Writing...';
+  await wait(slow?700:0);
+  exGo.textContent='Rewrite';showExLine();
+  exPlaying=false;
+}
+document.getElementById('exBtn').onclick=()=>{track('example');playExample();};
+exGo.onclick=()=>{showExLine();};
+document.getElementById('exClose').onclick=()=>{demo.hidden=true;document.getElementById('tryex').classList.remove('done');};
+document.getElementById('exTones').addEventListener('click',e=>{
+  const b=e.target.closest('[data-ex]');if(!b)return;
+  exTone=b.dataset.ex;
+  [...e.currentTarget.querySelectorAll('.tone')].forEach(x=>x.classList.toggle('on',x===b));
+  if(!exResult.hidden)showExLine();
+});
 // Share. Uses the phone's own share sheet where there is one, which is what
 // makes this work on LinkedIn and Substack from a mobile, and falls back to
 // the clipboard on desktop.
@@ -655,7 +722,7 @@ async function shareLine(i,btn){
   setTimeout(()=>btn.textContent='share',1400);
 }
 function hasContent(r){return (r.name||'').trim()||(r.company||'').trim()||(r.detail||'').trim();}
-async function generateOne(i){const row=rows[i];if(!hasContent(row)){errors[i]="Add a name, company or a detail first.";render();return;}if(left()<=0){refreshMeter();errors[i]="That is your 15 free warmlines.";render();return;}errors[i]='';busy[i]=true;render();try{const res=await fetch('/api/write',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({row:row,tone:TONES[row.tone||'warm'],toneKey:row.tone||'warm',offer:document.getElementById('offer').value.trim()})});if(!res.ok){let msg="Couldn't reach the writer. Try again.";try{const e=await res.json();if(e&&e.error)msg=e.error;}catch(_){}const err=new Error(msg);err.shown=msg;err.capped=(res.status===429);throw err;}const d=await res.json();if(!results[i])results[i]={};results[i][row.tone||'warm']=d.line;examples[i]=false;busy[i]=false;bumpUsed();loadGlobal();render();}catch(err){busy[i]=false;if(err.capped){errors[i]='';render();const el=document.getElementById('err-'+i);if(el)capCapture(el,err.shown);}else{errors[i]=err.shown||"Couldn't reach the writer. Try again.";render();}}}
+async function generateOne(i){const row=rows[i];if(!hasContent(row)){errors[i]="Add a name, company or a detail first.";render();return;}if(left()<=0){refreshMeter();errors[i]="That is your 15 free warmlines.";render();return;}errors[i]='';busy[i]=true;render();try{const res=await fetch('/api/write',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({row:row,tone:TONES[row.tone||'warm'],toneKey:row.tone||'warm',offer:document.getElementById('offer').value.trim()})});if(!res.ok){let msg="Couldn't reach the writer. Try again.";try{const e=await res.json();if(e&&e.error)msg=e.error;}catch(_){}const err=new Error(msg);err.shown=msg;err.capped=(res.status===429);throw err;}const d=await res.json();if(!results[i])results[i]={};results[i][row.tone||'warm']=d.line;busy[i]=false;bumpUsed();loadGlobal();render();}catch(err){busy[i]=false;if(err.capped){errors[i]='';render();const el=document.getElementById('err-'+i);if(el)capCapture(el,err.shown);}else{errors[i]=err.shown||"Couldn't reach the writer. Try again.";render();}}}
 // Running out of budget is the moment someone is most interested. Instead of
 // showing them a dead end, ask for an email. Same moment, useful outcome.
 function capCapture(el,msg){el.textContent='';const box=document.createElement('div');box.className='cap-capture';const p=document.createElement('p');p.textContent=msg||"Warmline is resting. It hit today's ceiling.";const p2=document.createElement('p');p2.className='cap-sub';p2.textContent="Leave your email and I'll tell you when it's back.";const row=document.createElement('div');row.className='cap-row';const input=document.createElement('input');input.type='email';input.placeholder='you@example.com';input.className='cap-input';const b=document.createElement('button');b.type='button';b.className='cap-btn';b.textContent='Tell me';b.onclick=async()=>{const email=input.value.trim();if(!email||email.indexOf('@')<0){input.focus();return;}b.disabled=true;b.textContent='Sending...';try{await fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})});}catch(e){}box.textContent="Got it. I'll email you when Warmline is back.";};row.appendChild(input);row.appendChild(b);box.appendChild(p);box.appendChild(p2);box.appendChild(row);el.appendChild(box);}
