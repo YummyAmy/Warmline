@@ -61,7 +61,18 @@ async function redis(cfg, command) {
 // testing on 5 Aug. 25 leaves real headroom and is still only ~$0.07 a day from
 // any single person.
 const PER_IP_PER_DAY = 25;
-const GLOBAL_PER_DAY = 100;   // see the arithmetic above, on Sonnet
+
+// GLOBAL is sized for a LinkedIn/Substack spike, not for a quiet Tuesday, and
+// it is deliberately NOT the thing protecting the budget.
+//   250 lines in one day  = ~$0.65 for that day. That is 25-50 real people.
+//   a launch spike + a normal month (~800 lines total) = ~$2.10
+//   $5 of Sonnet at intro pricing = ~1,900 lines, which 150 subscribers will
+//   not come close to generating in a month.
+// The MONTHLY guarantee is the $5 console limit, which cannot be overridden by
+// anything in this file. This number only stops one strange day from eating the
+// whole month in an afternoon. Blocking real visitors to save 30 cents is the
+// worse failure, so it is set generously.
+const GLOBAL_PER_DAY = 250;
 
 function today() {
   return new Date().toISOString().slice(0, 10); // "2026-07-30"
@@ -534,7 +545,13 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
     // Count it. Done inline, so there's no second network hop and no COUNT_URL
     // environment variable to configure or get wrong.
     if (cfg) {
-      try { await redis(cfg, ["INCR", "warmline:openers"]); } catch {}
+      try {
+        await redis(cfg, ["INCR", "warmline:openers"]);
+        // Analytics. Which tone people actually pick is the most useful thing
+        // you can know about this tool. Read it at /api/stats?key=...
+        await redis(cfg, ["INCR", "warmline:stats:generated"]);
+        if (which) await redis(cfg, ["INCR", `warmline:stats:tone:${which}`]);
+      } catch {}
     }
 
     return res.status(200).json({ line });
