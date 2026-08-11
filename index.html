@@ -128,27 +128,10 @@ input.f:focus,.offer:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(2
 /* Full-bleed band. This is the most persuasive block on the page and it was
    sitting on the same cream as everything else. Breaking the page into
    chapters is what stops it reading as one long document. */
-/* NO full-bleed trick here, deliberately. This section is a direct child of
-   body, so a plain block already spans the whole width. The trick I used first
-   set transform:translateX(-50%), which .reveal below then overwrote with its
-   own transform, leaving the left:50% shift with nothing to cancel it. That is
-   what threw the band halfway across the page. Two rules, one property. */
-.demo{margin-top:80px;background:var(--green-deep);padding:66px 28px 74px}
-.demo .sec-head{color:var(--paper)}
-.demo .sec-sub{color:#9ccbb4}
-/* On the dark band the hierarchy inverts: the bot line recedes into the green,
-   the human line comes forward in cream. */
-.demo .ba-bad{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.16);opacity:1}
-.demo .ba-bad p{color:#bcd4c8}
-.demo .ba-bad .ba-tag,.demo .ba-bad .ba-note{color:#eda58c}
-.demo .ba-good{background:var(--paper);border-color:var(--gold)}
-.demo .ba-good p{color:var(--ink)}
-.demo .ba-good .ba-tag{color:var(--gold-2)}
-.demo .ba-good .ba-note{color:var(--green)}
-.demo .ba-arrow{color:var(--gold)}
+.demo{margin-top:70px}
 .ba{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:stretch;max-width:960px;margin:0 auto}
 @media(max-width:760px){.ba{grid-template-columns:1fr}.ba-arrow{transform:rotate(90deg);justify-self:center}}
-.ba-col{border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:14px;border:1px solid var(--line);box-shadow:0 18px 40px -28px rgba(0,0,0,.55)}
+.ba-col{border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:14px;border:1px solid var(--line);box-shadow:0 14px 32px -26px rgba(27,42,36,.42)}
 .ba-bad{background:var(--card);opacity:.85}
 .ba-good{background:var(--green-deep);border-color:var(--green-deep)}
 .ba-tag{font-family:'Courier New',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;font-weight:700}
