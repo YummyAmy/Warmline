@@ -1,0 +1,6 @@
+{
+  "name": "warmline",
+  "private": true,
+  "type": "module",
+  "description": "Warmline. First lines that sound like you. Static site plus serverless functions, no build step and no dependencies."
+}

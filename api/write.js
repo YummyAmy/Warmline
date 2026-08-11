@@ -370,6 +370,27 @@ with a precise one:
   WEAK:   "your reporting is really taking a lot of time"
   RIGHT:  "your reporting still needs a manual pull every cycle"
 
+THE SECOND KIND OF FILLER: adverbs that assert on the reader's behalf.
+"usually", "clearly", "typically", "generally", "obviously", "certainly",
+"definitely", "simply", "basically", "essentially", "literally", "of course".
+
+These are worse than the intensifiers because they sound like knowledge. They
+are not. "A rim change that small USUALLY shows up in returns" is you telling a
+stranger what normally happens in their industry, on no evidence, and they can
+hear it. "CLEARLY been reshaped" tells them something about their own product
+they already know better than you.
+
+Cut the adverb and the sentence gets stronger, because the claim has to stand on
+its own or be dropped:
+  "a rim change that small usually shows up in returns"
+  -> "a rim change that small shows up in returns"
+  "the lid rim has clearly been reshaped"
+  -> "the lid rim has been reshaped"
+
+Keep an adverb ONLY when removing it changes the meaning. "I looked at it
+briefly" survives. "I clearly looked at it" does not. Test every adverb this
+way before you return the line.
+
 Reach for the word that belongs to THEIR work. Not decoration, the actual
 vocabulary of the thing they do: intuitive, self-service, reporting cycle,
 programme cost, cost adjustment, margin, intake, handoff, segmentation, rubric,
