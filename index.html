@@ -349,7 +349,16 @@ a.uc-link{text-decoration:none;border-color:var(--green)}a.uc-link h4{color:var(
 .qa summary{list-style:none;cursor:pointer;padding:20px 0;font-family:Georgia,serif;font-size:18px;display:flex;justify-content:space-between;align-items:center}
 .qa summary::-webkit-details-marker{display:none}.qa summary::after{content:"+";color:var(--gold-2);font-size:24px}
 .qa[open] summary::after{content:"\2013"}.qa p{margin:0 0 20px;color:var(--ink-soft);font-size:15px}
-.foot{text-align:center;padding:50px 0 60px;margin-top:70px;position:relative}.copyr{position:absolute;left:28px;bottom:24px;font-family:'Courier New',monospace;font-size:11px;color:var(--ink-soft)}@media(max-width:700px){.copyr{position:static;margin-top:20px}}
+/* Green footer. .foot is a body-level block so it fills the width on its own, no viewport tricks. Everything inside flips to cream and gold. */
+.foot{text-align:center;padding:60px 0 64px;margin-top:80px;position:relative;background:var(--green-deep);color:var(--paper)}
+.foot .fcol .fh{color:var(--gold)}
+.foot .fcol a{color:#bcd4c8}
+.foot .fcol a:hover{color:var(--gold)}
+.foot .amy{color:var(--paper)}
+.foot .pw{color:#9ccbb4}
+.foot .pw b{color:var(--gold)}
+.foot .copyr{color:#7fae99}
+.foot .foot-bottom{border-top:1px solid rgba(255,255,255,.14)}.copyr{position:absolute;left:28px;bottom:24px;font-family:'Courier New',monospace;font-size:11px;color:var(--ink-soft)}@media(max-width:700px){.copyr{position:static;margin-top:20px}}
 .foot-cols{max-width:1000px;margin:0 auto 40px;padding:0 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:left}
 @media(max-width:760px){.foot-cols{grid-template-columns:1fr 1fr}}
 .fcol .fh{font-family:'Courier New',monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:14px;font-weight:700}
