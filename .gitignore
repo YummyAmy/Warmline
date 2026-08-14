@@ -12,3 +12,11 @@ index.html.backup
 # for making posts, they just stop being pushed. share-card.png at the repo
 # root is NOT ignored, because that one is the real link preview image.
 social/
+
+# Internal working notes. Useful locally, but a public repo shouldn't carry a
+# roadmap or handoff notes: it tells strangers what isn't built yet.
+HANDOFF.md
+HANDOFF-COWORK.md
+V2_PLAN.md
+icon-512.png
+share-card-comingsoon.png
