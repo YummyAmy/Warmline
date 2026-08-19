@@ -62,12 +62,23 @@ function looksLikeEmail(s) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
 }
 
+function adminOk(req) {
+  // Prefer a header. Query strings end up in browser history, proxy logs and
+  // referrer headers; a header does not. ?key= still works so an existing
+  // bookmark doesn't break, but the header is the one to use going forward:
+  //   curl -H "x-admin-key: YOUR_SECRET" https://.../api/stats
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) return false;
+  const auth = String(req.headers["authorization"] || "");
+  const bearer = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  const given = req.headers["x-admin-key"] || bearer || req.query?.key || "";
+  return given === secret;
+}
+
 export default async function handler(req, res) {
   // GET with the right secret = download your list. See notes at the bottom.
   if (req.method === "GET") {
-    const secret = process.env.ADMIN_SECRET;
-    const given = req.query?.key || "";
-    if (!secret || given !== secret) {
+    if (!adminOk(req)) {
       return res.status(404).json({ error: "Not found" });
     }
     const cfg = redisConfig();

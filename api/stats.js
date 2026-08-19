@@ -40,7 +40,8 @@ const EVENTS = [
   "visit",     // someone loaded the page
   "example",   // someone pressed "Show me an example"
   "share",     // someone shared a line
-  "generated", // a line was successfully written (incremented by write.js)
+  "generated",       // every line successfully written (can be many per person)
+  "first_generation",// fired ONCE per browser, the first time someone generates
   "tone:warm",
   "tone:direct",
   "tone:technical",
@@ -63,13 +64,24 @@ function clientIp(req) {
 // script inflating the numbers and burning through the Upstash quota.
 const PER_IP_PER_DAY = 60;
 
+function adminOk(req) {
+  // Prefer a header. Query strings end up in browser history, proxy logs and
+  // referrer headers; a header does not. ?key= still works so an existing
+  // bookmark doesn't break, but the header is the one to use going forward:
+  //   curl -H "x-admin-key: YOUR_SECRET" https://.../api/stats
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) return false;
+  const auth = String(req.headers["authorization"] || "");
+  const bearer = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  const given = req.headers["x-admin-key"] || bearer || req.query?.key || "";
+  return given === secret;
+}
+
 export default async function handler(req, res) {
   const cfg = redisConfig();
 
   if (req.method === "GET") {
-    const secret = process.env.ADMIN_SECRET;
-    const given = req.query?.key || "";
-    if (!secret || given !== secret) {
+    if (!adminOk(req)) {
       return res.status(404).json({ error: "Not found" });
     }
     if (!cfg) return res.status(200).json({ stats: {}, storage: "not connected" });
@@ -80,13 +92,27 @@ export default async function handler(req, res) {
         stats[e] = parseInt((vals && vals[i]) || "0", 10) || 0;
       });
 
-      // The two numbers worth looking at first.
+      // MEASUREMENT NOTE. This used to report generated/visits as a
+      // "conversion rate", which is wrong: one visitor can generate many lines,
+      // so 100 visits and 250 generations reported as "250% of visits produce a
+      // line". A rate that can exceed 100% is not a rate.
+      //
+      // Two separate numbers now, because they answer different questions:
+      //   activation  = first_generation / visit  -> what share of VISITORS try it
+      //   intensity   = generated / first_generation -> how many lines each one writes
       const visits = stats.visit || 0;
       const generated = stats.generated || 0;
-      stats._conversion =
-        visits > 0 ? `${((generated / visits) * 100).toFixed(1)}% of visits produce a line` : "no visits yet";
-      stats._sharePerLine =
-        generated > 0 ? `${(((stats.share || 0) / generated) * 100).toFixed(1)}% of lines get shared` : "no lines yet";
+      const activated = stats.first_generation || 0;
+
+      stats._activation = visits > 0
+        ? `${((activated / visits) * 100).toFixed(1)}% of visitors generate at least one line`
+        : "no visits yet";
+      stats._linesPerActivatedVisitor = activated > 0
+        ? `${(generated / activated).toFixed(1)} lines per visitor who tried it`
+        : "nobody has generated yet";
+      stats._sharePerLine = generated > 0
+        ? `${(((stats.share || 0) / generated) * 100).toFixed(1)}% of lines get shared`
+        : "no lines yet";
 
       return res.status(200).json({ stats });
     } catch {

@@ -70,16 +70,26 @@ function clean(s, max) {
     .slice(0, max);
 }
 
+function adminOk(req) {
+  // Prefer a header. Query strings end up in browser history, proxy logs and
+  // referrer headers; a header does not. ?key= still works so an existing
+  // bookmark doesn't break, but the header is the one to use going forward:
+  //   curl -H "x-admin-key: YOUR_SECRET" https://.../api/stats
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) return false;
+  const auth = String(req.headers["authorization"] || "");
+  const bearer = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  const given = req.headers["x-admin-key"] || bearer || req.query?.key || "";
+  return given === secret;
+}
+
 export default async function handler(req, res) {
   const cfg = redisConfig();
 
   // --- Read approved comments (public, safe) ---
   if (req.method === "GET") {
-    const secret = process.env.ADMIN_SECRET;
-    const given = req.query?.key || "";
-
     // With the admin key you see the pending queue instead.
-    if (secret && given === secret) {
+    if (adminOk(req)) {
       if (!cfg) return res.status(200).json({ pending: [] });
       try {
         const raw = (await redis(cfg, ["LRANGE", PENDING_KEY, 0, 199])) || [];

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Warmline</title>
+<style>
+:root{
+  --paper:#f3efe4; --paper-2:#ece6d6; --ink:#1b2a24; --ink-soft:#4a5a51;
+  --green:#1d6e4f; --green-deep:#0f4d36; --gold:#e0a324; --gold-2:#ca8f13;
+  --line:#d8d1bf; --card:#ffffff; --bad:#b8543a;
+  --serif:Georgia,'Times New Roman',serif;
+  --mono:'Courier New',Courier,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#12211b; --paper-2:#182c23; --ink:#f1ece0; --ink-soft:#a9c0b5;
+    --green:#5fb694; --green-deep:#0d3d2c; --gold:#f0b942; --gold-2:#e8ae32;
+    --line:#2a4438; --card:#182c23; --bad:#e08a6f;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.bar{height:10px;background:var(--gold)}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:6px}
+
+.hero{padding:54px 0 8px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--green);font-weight:700;margin:0 0 16px}
+h1{font-family:var(--serif);font-size:clamp(46px,10vw,84px);line-height:1;margin:0;
+  font-weight:700;letter-spacing:-1.5px;color:var(--green-deep)}
+@media (prefers-color-scheme: dark){h1{color:var(--green)}}
+.tag{font-family:var(--mono);font-size:clamp(15px,3.4vw,20px);color:var(--gold-2);margin:16px 0 0}
+.rule{width:150px;height:8px;background:var(--gold);margin:26px 0 0;border-radius:2px}
+.lede{font-family:var(--serif);font-size:clamp(19px,3.6vw,24px);line-height:1.5;
+  margin:28px 0 0;max-width:34em}
+.meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:30px 0 0}
+.pill{font-family:var(--mono);font-size:12.5px;letter-spacing:.6px;text-transform:uppercase;
+  border:1px solid var(--line);border-radius:999px;padding:8px 15px;color:var(--ink-soft)}
+.pill.solid{background:var(--green-deep);border-color:var(--green-deep);color:var(--paper)}
+@media (prefers-color-scheme: dark){.pill.solid{color:#eafff6}}
+
+.cta{display:inline-block;margin:30px 0 0;background:var(--green-deep);color:#f3efe4;
+  font-family:var(--sans);font-size:18px;font-weight:700;border:0;border-radius:12px;
+  padding:18px 34px;cursor:pointer;text-decoration:none;transition:transform .12s,background .16s;
+  box-shadow:0 16px 34px -22px rgba(0,0,0,.6)}
+.cta:hover{background:var(--green);transform:translateY(-2px)}
+.cta:active{transform:translateY(0)}
+.cta-note{font-family:var(--mono);font-size:13px;color:var(--ink-soft);margin:12px 0 0}
+
+.sec{margin:60px 0 0}
+h2{font-family:var(--serif);font-size:clamp(26px,5vw,34px);margin:0 0 8px;color:var(--ink)}
+.sub{color:var(--ink-soft);margin:0 0 24px;font-size:16px}
+
+.ba{display:grid;gap:16px}
+@media(min-width:680px){.ba{grid-template-columns:1fr 1fr}}
+.col{border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--card);
+  display:flex;flex-direction:column;gap:12px}
+.col.good{background:var(--green-deep);border-color:var(--green-deep)}
+.lbl{font-family:var(--mono);font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;font-weight:700}
+.col.bad .lbl{color:var(--bad)} .col.good .lbl{color:var(--gold)}
+.col p{font-family:var(--serif);font-size:16.5px;line-height:1.55;margin:0;flex:1}
+.col.bad p{color:var(--ink-soft)} .col.good p{color:#f3efe4;font-style:italic}
+.note{font-family:var(--mono);font-size:12px;margin:0}
+.col.bad .note{color:var(--bad)} .col.good .note{color:#9ccbb4}
+
+.tones{display:grid;gap:12px}
+@media(min-width:560px){.tones{grid-template-columns:1fr 1fr}}
+.tone{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--card)}
+.tone b{display:block;font-family:var(--serif);font-size:19px;margin:0 0 4px}
+.tone span{color:var(--ink-soft);font-size:14.5px}
+
+.refuse{background:var(--paper-2);border:1px solid var(--line);border-radius:16px;padding:24px}
+.refuse ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:9px}
+.refuse li{font-family:var(--mono);font-size:13px;color:var(--ink-soft);
+  border:1px solid var(--line);border-radius:8px;padding:7px 12px;text-decoration:line-through;
+  background:var(--card)}
+
+.steps{counter-reset:s;display:grid;gap:20px}
+.step{display:flex;gap:16px;align-items:flex-start}
+.step .n{font-family:var(--serif);font-size:34px;font-weight:700;color:var(--gold-2);
+  line-height:1;min-width:52px}
+.step b{display:block;font-family:var(--serif);font-size:19px;margin:0 0 3px}
+.step span{color:var(--ink-soft);font-size:15px}
+
+.close{margin:64px 0 0;background:var(--green-deep);border-radius:20px;padding:40px 28px;text-align:center}
+.close h2{color:#f3efe4;margin-bottom:10px}
+.close p{color:#9ccbb4;margin:0 0 6px;font-size:16px}
+.close .cta{background:var(--gold);color:#1b2a24;margin-top:22px}
+.close .cta:hover{background:var(--gold-2)}
+.close .cta-note{color:#9ccbb4}
+
+.foot{margin:52px 0 0;padding:26px 0 60px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:13px;color:var(--ink-soft);text-align:center}
+.rev{font-family:var(--mono);font-size:13px;color:var(--ink-soft);margin:14px 0 0}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1!important;transform:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .cta{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="bar"></div>
+<main class="wrap">
+
+  <header class="hero">
+    <p class="eyebrow">warm outreach . human voice</p>
+    <h1 data-gumroad-field="name">Warmline</h1>
+    <p class="tag">where robots don't eat your words...</p>
+    <div class="rule"></div>
+    <p class="lede">Write one real detail about the person you are reaching. Get back the
+      first line of the email, in a voice that sounds like a person wrote it.</p>
+
+    <div class="meta">
+      <span class="pill solid" data-gumroad-field="price">Free</span>
+      <span class="pill">15 lines free</span>
+      <span class="pill">No signup</span>
+      <span class="pill">No card</span>
+    </div>
+
+    <a class="cta" data-gumroad-action="buy" role="button" tabindex="0">Get Warmline &rarr;</a>
+    <p class="cta-note">Free. You will get the link straight after.</p>
+    <p class="rev">
+      <span data-gumroad-field="rating"></span>
+      <span data-gumroad-field="review-count">Be the first to review it</span>
+    </p>
+  </header>
+
+  <section class="sec reveal" aria-labelledby="diff">
+    <h2 id="diff">Same prospect, different expressions</h2>
+    <p class="sub">One reads like a template. One reads like somebody looked.</p>
+    <div class="ba">
+      <div class="col bad">
+        <span class="lbl">Generic AI</span>
+        <p>"I hope this email finds you well! I came across your company and wanted to
+          reach out because I think we could really leverage some scalable synergies."</p>
+        <p class="note">deleted in 8 seconds</p>
+      </div>
+      <div class="col good">
+        <span class="lbl">Warmline</span>
+        <p>"Janet, congratulations on the new cup redesign. I noticed the lid rim looks
+          like it's been reshaped for a better grip, which is a small thing most companies
+          skip. Was that driven by customer complaints about spills, or an internal
+          usability push?"</p>
+        <p class="note">opened and replied to</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec reveal" aria-labelledby="tones">
+    <h2 id="tones">Four voices</h2>
+    <p class="sub">Because you do not write to a founder the way you write to a hiring manager.</p>
+    <div class="tones">
+      <div class="tone"><b>Warm</b><span>Glad to have run into you.</span></div>
+      <div class="tone"><b>Direct</b><span>Hit the nail on the head early.</span></div>
+      <div class="tone"><b>Technical</b><span>Peer to peer, impress them with methods.</span></div>
+      <div class="tone"><b>Executive</b><span>Authority, plus warmth.</span></div>
+    </div>
+  </section>
+
+  <section class="sec reveal" aria-labelledby="refuse">
+    <h2 id="refuse">Defined by what it refuses</h2>
+    <p class="sub">Fifty-six phrases sit on a banned list inside it. A few of them:</p>
+    <div class="refuse">
+      <ul>
+        <li>I hope this email finds you well</li><li>I came across</li><li>circle back</li>
+        <li>touch base</li><li>leverage</li><li>seamless</li><li>synergy</li>
+        <li>actually</li><li>really</li><li>let's hop on a call</li><li>pick your brain</li>
+        <li>game-changer</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec reveal" aria-labelledby="how">
+    <h2 id="how">How it works</h2>
+    <div class="steps">
+      <div class="step"><span class="n">01</span><div><b>Drop in who you are reaching</b>
+        <span>Name, company, and one real detail. The more specific, the sharper the line.</span></div></div>
+      <div class="step"><span class="n">02</span><div><b>Pick a tone for that person</b>
+        <span>Warm, Direct, Technical or Executive, set individually for each prospect.</span></div></div>
+      <div class="step"><span class="n">03</span><div><b>Get your warmline</b>
+        <span>Two to four sentences that lead with them. Copy it, send it, move on.</span></div></div>
+    </div>
+  </section>
+
+  <section class="close reveal">
+    <h2>Don't overthink it. Just send it.</h2>
+    <p>Fifteen first lines, free, with no account to make.</p>
+    <a class="cta" data-gumroad-action="buy" role="button" tabindex="0">Get Warmline &rarr;</a>
+    <p class="cta-note">warmline.dataaccordingtome.com</p>
+  </section>
+
+  <p class="foot">Built by Ame. data according to me.</p>
+</main>
+
+<script>
+(function(){
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  if(!els.length)return;
+  var showAll=function(){els.forEach(function(e){e.classList.add('in');});};
+  if(!('IntersectionObserver' in window)){showAll();return;}
+  var io=new IntersectionObserver(function(en){
+    en.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}});
+  },{rootMargin:'0px 0px -8% 0px',threshold:0.05});
+  els.forEach(function(e){io.observe(e);});
+  setTimeout(showAll,3000);
+  [].slice.call(document.querySelectorAll('[data-gumroad-action="buy"]')).forEach(function(b){
+    b.addEventListener('keydown',function(e){
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();b.click();}
+    });
+  });
+})();
+</script>
+</body>
+</html>
