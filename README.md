@@ -2,10 +2,10 @@
 
 **Human-tone cold outreach and messages.** 
 
-Write one real detail about someone you want
-to reach, your name and their company name, and get back an opening line that is exactly like something you would say if you met the person. Not like a template or spam.
+Write a detail about someone you want
+to reach, your name and their company name, and get an opening line that is sounds like something you would say if you met the person. Not like a template.
 
-Some cold outreaches are not read past the first line. And sometimes, it's because they don't sound real. A lot of people use AI and so many companies and business know that you're using AI, BUT nobody wants to rea something that is copy and paste from another LLM. 
+Some cold outreaches are not read past the first line. And sometimes, it's because they don't sound real. A lot of people use AI and companies know that you're using AI, BUT nobody wants to read something that is copy and paste from an LLM. 
 
 
 That's where Warmline comes in. It writes your lines so that it leads with the *person*, their businesses and how they are doing. It's all about *them*. 
@@ -13,8 +13,8 @@ That's where Warmline comes in. It writes your lines so that it leads with the *
 And it references something specific, and skips every tell-tale AI phrase like 
 ("I hope this email finds you well," "I came across your profile," and a long banned-words list baked in).
 
-Write one real detail about a prospect and get
-back an opening line tailored and personlized enough for you to work with. (AI fillers and words are banned).
+Write 1-2 real detail about a prospect and get
+back an opening line tailored and personlized enough for you to work with.
 Built as a single self-contained page. 
 
 #### Free to use for the first 15 Warmline(s), and no signup.
@@ -31,8 +31,8 @@ doing collabs. Anyone who sends cold messages without a sales team or a
 $99/month tool.
 
 ## Why Warmline
-got tired of beige bland boring blue AI outreach, they all sounded like doom, and wanted
-a small tool that sounds like a human. It's also part of *data according to me*. 
+got tired of beige bland boring blue AI outreach, they all sounded like doom, and I wanted
+a simple tool that writes like a person using information I provided. It's also part of *data according to me*. 
 
 warmline.dataaccordingtome.com
 
