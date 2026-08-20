@@ -194,6 +194,8 @@ input.f:focus,.offer:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(2
 }
 
 .anchor{display:block;height:0;scroll-margin-top:90px}
+.langnote{display:none;font-family:'Courier New',monospace;font-size:12px;color:var(--green);margin-left:8px}
+.langnote.show{display:inline;animation:fade .3s forwards}
 .skip{position:absolute;left:-9999px;top:0;background:var(--green-deep);color:var(--paper);padding:12px 18px;border-radius:0 0 10px 0;z-index:99;text-decoration:none;font-size:14px}
 .skip:focus{left:0}
 a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--gold-text);outline-offset:3px;border-radius:6px}
@@ -415,7 +417,7 @@ a.uc-link{text-decoration:none;border-color:var(--green)}a.uc-link h4{color:var(
   <div class="top">
     <div class="brandnav"><a class="brand" href="#top">Warmline</a>
     <nav class="nav"><a href="#how">How it works</a><a href="#who">Who it is for</a><a href="#faq">FAQ</a><a href="#work">Business</a></nav></div>
-    <div class="topright"><a class="tagr" href="https://ameikpe.substack.com" target="_blank" rel="noopener">data according to me</a><button class="langbtn" id="lang"><span>🇬🇧 EN</span> / <span>🇪🇸 ES</span></button></div>
+    <div class="topright"><a class="tagr" href="https://ameikpe.substack.com" target="_blank" rel="noopener">data according to me</a><button type="button" class="langbtn" id="lang" aria-label="Language: English. Spanish is coming."><span>🇬🇧 EN</span> / <span>🇪🇸 ES</span></button></div>
   </div>
   </div></div>
 
@@ -486,6 +488,7 @@ a.uc-link{text-decoration:none;border-color:var(--green)}a.uc-link h4{color:var(
       <div class="result is-example" id="exResult" hidden><div class="res-body"><p id="exLine"></p></div></div>
       <div class="demo-foot">That's it. Your turn, with someone or a business you want to reach.</div>
     </div>
+    <noscript><div class="card" style="text-align:center"><p style="margin:0 0 8px"><b>Warmline needs JavaScript to write your line.</b></p><p style="margin:0;color:var(--ink-soft);font-size:14.5px">Turn it on and reload, and the tool will appear here. Everything else on this page works without it.</p></div></noscript>
     <div id="cards"></div>
     <div class="bottom"><button class="btn-ghost" id="add">+ Add another prospect</button><button class="btn-all" id="all">Write all lines</button><button class="btn-ghost" id="download">Download results</button></div>
     <div class="critter">
@@ -761,7 +764,7 @@ async function generateOne(i){const row=rows[i];if(!hasContent(row)){errors[i]="
 // showing them a dead end, ask for an email. Same moment, useful outcome.
 function capCapture(el,msg){el.textContent='';const box=document.createElement('div');box.className='cap-capture';const p=document.createElement('p');p.textContent=msg||"Warmline is resting. It hit today's ceiling.";const p2=document.createElement('p');p2.className='cap-sub';p2.textContent="Leave your email and I'll tell you when it's back.";const row=document.createElement('div');row.className='cap-row';const input=document.createElement('input');input.type='email';input.placeholder='you@example.com';input.className='cap-input';const b=document.createElement('button');b.type='button';b.className='cap-btn';b.textContent='Tell me';b.onclick=async()=>{const email=input.value.trim();if(!email||email.indexOf('@')<0){input.focus();return;}b.disabled=true;b.textContent='Sending...';const ok=await postOk('/api/subscribe',{email:email,source:'cap'});if(ok){box.textContent="Got it. I'll email you when Warmline is back.";}else{b.disabled=false;b.textContent='Try again';}};row.appendChild(input);row.appendChild(b);box.appendChild(p);box.appendChild(p2);box.appendChild(row);el.appendChild(box);}
 document.getElementById('all').onclick=async()=>{const btn=document.getElementById('all');btn.disabled=true;btn.textContent='Writing...';for(let i=0;i<rows.length;i++){if(hasContent(rows[i])&&left()>0)await generateOne(i);}btn.disabled=false;btn.textContent='Write all lines';if(anyResults()){document.getElementById('bear').classList.add('show');document.getElementById('pen').style.display='none';document.getElementById('doneLine').classList.add('show');}};
-document.getElementById('download').onclick=()=>{const lines=rows.map((r,i)=>{const out=resultFor(i);return out?(r.name||'Prospect '+(i+1))+(r.company?' ('+r.company+')':'')+' ['+TONE_LABELS[curTone(i)]+']:\n'+out+'\n':null;}).filter(Boolean);if(!lines.length){alert('Write a few warmlines first, then download.');return;}const blob=new Blob(['My Warmline(s)\n\n'+lines.join('\n')],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-warmline.txt';a.click();};
+document.getElementById('download').onclick=()=>{const lines=rows.map((r,i)=>{const out=resultFor(i);return out?(r.name||'Prospect '+(i+1))+(r.company?' ('+r.company+')':'')+' ['+TONE_LABELS[curTone(i)]+']:\n'+out+'\n':null;}).filter(Boolean);if(!lines.length){say('doneLine','Write a few warmlines first, then download.',true);return;}const blob=new Blob(['My Warmline(s)\n\n'+lines.join('\n')],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-warmline.txt';a.click();};
 // v2.0 waitlist, shown once the 15 free lines are gone. Someone who used all
 // fifteen and still wants more is the most qualified person on the site, so the
 // signup is tagged "waitlist" in the export to keep it separate from the
@@ -780,8 +783,7 @@ renderMarquee(seed);
 async function loadComments(){try{const r=await fetch('/api/comments');const d=await r.json();const real=(d.comments||[]).map(c=>[String(c.text||''),String(c.name||'anon')]).filter(x=>x[0]);if(real.length){seed.unshift(...real);renderMarquee(seed);}}catch(e){}}
 loadComments();
 document.getElementById('cBtn').onclick=async()=>{const name=document.getElementById('cName').value.trim()||'anon';const text=document.getElementById('cText').value.trim();if(!text)return;const b=document.getElementById('cBtn');b.disabled=true;const ok=await postOk('/api/comments',{name:name,text:text});b.disabled=false;if(ok){say('cMsg','got it, thank you. I read these before they go up.',false);document.getElementById('cText').value='';document.getElementById('cName').value='';}else{say('cMsg','that did not send. please try again in a moment.',true);}};
-/* lang button (stub for now) */
-document.getElementById('lang').onclick=()=>{alert('Spanish version coming soon. For now the tool is English-only.');};
+
 
 
 
@@ -847,6 +849,20 @@ document.getElementById('lang').onclick=()=>{alert('Spanish version coming soon.
   },{rootMargin:'0px 0px -10% 0px',threshold:.06});
   els.forEach(e=>io.observe(e));
   setTimeout(showAll,3000);
+})();
+
+/* Language switch. Spanish is not built yet, so this says so on the page
+   rather than in a browser popup. */
+(function(){
+  var b=document.getElementById('lang'); if(!b) return;
+  b.onclick=function(){
+    var n=document.getElementById('langNote');
+    if(!n){ n=document.createElement('span'); n.id='langNote'; n.className='langnote';
+      n.setAttribute('role','status'); b.insertAdjacentElement('afterend',n); }
+    n.textContent='Espanol coming soon. English for now.';
+    n.classList.add('show');
+    clearTimeout(b._t); b._t=setTimeout(function(){n.classList.remove('show');},4000);
+  };
 })();
 
 render();refreshMeter();loadGlobal();track('visit');
