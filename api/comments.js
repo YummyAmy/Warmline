@@ -118,7 +118,11 @@ export default async function handler(req, res) {
 
   if (!text) return res.status(400).json({ error: "Nothing to save" });
 
-  if (!cfg) return res.status(200).json({ ok: true, storage: "not connected" });
+  // Storage is not wired up, so nothing was saved. Say so honestly: the page
+  // needs to know, or it thanks the visitor for a note that went nowhere.
+  if (!cfg) {
+    return res.status(503).json({ error: "Storage unavailable, please try again shortly" });
+  }
 
   if (await tooMany(cfg, req, "cmt")) {
     // Look successful. The page has already optimistically shown their note,
@@ -133,13 +137,13 @@ export default async function handler(req, res) {
     await redis(cfg, ["LTRIM", PENDING_KEY, 0, 499]);
     return res.status(200).json({ ok: true });
   } catch {
-    return res.status(200).json({ ok: true, storage: "unavailable" });
+    return res.status(503).json({ error: "Storage unavailable, please try again shortly" });
   }
 }
 
 // ---------------------------------------------------------------------------
 // TO SEE WHAT PEOPLE SUBMITTED:
-//   https://your-site.vercel.app/api/comments?key=YOUR_ADMIN_SECRET
+//   curl -H "x-admin-key: YOUR_SECRET" https://your-site/api/comments
 //
 // TO PUBLISH ONE you like, run this once in the Upstash console (Data Browser),
 // pasting the exact JSON line you want to show:

@@ -113,10 +113,11 @@ export default async function handler(req, res) {
   }
 
   const cfg = redisConfig();
+  // Storage is not wired up, so the address would be lost. Fail loudly: this
+  // used to return 200 and the page thanked people for a signup that never
+  // happened. An unhappy visitor who can retry beats a lost subscriber.
   if (!cfg) {
-    // Storage not wired up yet. Say OK so the visitor isn't shown an error,
-    // but flag it in the response so YOU can tell when testing.
-    return res.status(200).json({ ok: true, storage: "not connected" });
+    return res.status(503).json({ error: "Storage unavailable, please try again shortly" });
   }
 
   if (await tooMany(cfg, req, "sub")) {
@@ -131,7 +132,7 @@ export default async function handler(req, res) {
     await redis(cfg, ["HSET", LIST_KEY, clean, from ? `${stamp} (${from})` : stamp]);
     return res.status(200).json({ ok: true });
   } catch {
-    return res.status(200).json({ ok: true, storage: "unavailable" });
+    return res.status(503).json({ error: "Storage unavailable, please try again shortly" });
   }
 }
 
@@ -139,6 +140,6 @@ export default async function handler(req, res) {
 // TO READ YOUR LIST:
 //   1. In Vercel, add an environment variable ADMIN_SECRET set to any long
 //      random string you invent (treat it like a password).
-//   2. Visit:  https://your-site.vercel.app/api/subscribe?key=YOUR_SECRET
+//   2. curl -H "x-admin-key: YOUR_SECRET" https://your-site/api/subscribe
 //   Without the correct key this returns a 404, so nobody can scrape your list.
 // ---------------------------------------------------------------------------
