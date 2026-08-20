@@ -27,6 +27,74 @@ async function redis(cfg, command) {
   return data.result;
 }
 
+// --- QUALITY GATE ---------------------------------------------------------
+// The prompt ASKS the model to avoid these. Asking is not enforcing: models are
+// unreliable at checking a 56-item list against their own output. Live testing
+// found "really", "real", "exact" and "usually" all reaching visitors.
+//
+// So the server checks the line itself. A failure triggers ONE repair attempt.
+// Only failures cost a second call, so this does not double the bill.
+//
+// Deletion is deliberately NOT used here. Removing "usually" from the middle of
+// a sentence leaves broken grammar, and the sentence was wrong anyway: the
+// problem is the invented claim, not the word. Rewriting is the only real fix.
+
+// Rhetorical templates, not just words. These are the shapes that make writing
+// sound like a machine performing wisdom.
+const BAD_PATTERNS = [
+  /\bhere'?s the truth\b/i,
+  /\bthe truth is\b/i,
+  /\bwhat matters is\b/i,
+  /\bmatters? (?:less|more) than\b/i,
+  /\bmore than you (?:think|realise|realize)\b/i,
+  /\bit'?s not (?:about )?\w+,? it'?s\b/i,
+  /\bnot just \w+,? but\b/i,
+  /\bless about \w+ and more about\b/i,
+  /\brather than your\b/i,
+  /\bthat'?s a (?:different|real) \w+/i,
+  /\bthe kind of thing that\b/i,
+  /\btakes (?:real|some) (?:nerve|conviction|guts)\b/i,
+  /\bmost (?:people|teams|companies|founders|newsletters|brands)\b/i,
+  /\b(?:people|teams|companies) (?:usually|typically|generally|tend to)\b/i,
+  /\bthe part (?:people|most) \w+ get wrong\b/i,
+  /\bstuck with me\b/i, /\bgot me thinking\b/i,
+  /\bthere'?s something about\b/i,
+  /\bat the end of the day\b/i,
+  /\byou'?re not behind\b/i,
+  /\byou'?re doing better than you (?:think|realise|realize)\b/i,
+  /\bisn'?t behind\b/i,
+];
+
+// Words that assert on the reader's behalf, or that were on the banned list and
+// kept slipping through anyway.
+const BAD_WORDS = [
+  "usually","typically","generally","obviously","clearly","certainly",
+  "definitely","simply","basically","essentially","literally","of course",
+  "really","exact","exactly","precisely","seamless","leverage","synergy",
+  "scalable","game-changer","circle back","touch base","delve","unlock",
+  "supercharge","elevate","empower","resonated","spot on","nailed it",
+];
+
+function gradeLine(line) {
+  const fails = [];
+  const low = " " + line.toLowerCase() + " ";
+  for (const w of BAD_WORDS) {
+    if (new RegExp("\\b" + w.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&") + "\\b", "i").test(low)) {
+      fails.push('the word "' + w + '"');
+    }
+  }
+  for (const re of BAD_PATTERNS) {
+    const m = line.match(re);
+    if (m) fails.push('the phrase "' + m[0] + '"');
+  }
+  const words = line.trim().split(/\s+/).length;
+  if (words > 85) fails.push("it runs to " + words + " words, which is too long");
+  const sentences = (line.match(/[.!?](?:\s|$)/g) || []).length;
+  if (sentences > 4) fails.push("it runs to " + sentences + " sentences");
+  return fails;
+}
+// ---------------------------------------------------------------------------
+
 // --- Spend guards -----------------------------------------------------------
 // The 15-use limit in the browser is a courtesy, not a lock — anyone can clear
 // their storage. These two limits run on the server, where they can't be
@@ -232,15 +300,13 @@ export default async function handler(req, res) {
   // where nearly all the cost of this tool lives. Caching it is the difference
   // between roughly $19/month and roughly $4/month at the same traffic.
   // Do not interpolate anything per-prospect in here or the cache stops hitting.
-  const systemRules = `You write the FIRST LINE of a cold outreach message — the opener that proves it isn't spam. Not the whole message. Just one or two sentences that show real attention to this specific person.
+  const systemRules = `You write the FIRST LINE of a cold outreach message — the opener that proves it isn't spam. Not the whole message. One to three sentences, usually under 70 words, that show real attention to this specific person.
 
-THE SHAPE OF EVERY LINE. Four parts, in this order, no exceptions:
-1. A solid beginning. A real opening sentence with a subject and a verb, not a fragment and not a restatement of their own announcement.
-2. Something specific, named. It does not have to be a problem. It can be a decision they made, a number, a choice of wording, a thing they shipped. Name it plainly enough that they'd know you actually looked.
-3. A solution, a suggestion, or a question. Give them something to do with the line. Point at where you'd look, offer one small specific thing, or ask something you'd genuinely want answered.
-4. A smooth, natural finish. The last words belong to them. No trailing clause, no sign-off energy, no summary of yourself.
-
-Read it back before you return it. It must sound like a relaxed human talking when they are not under pressure. Unhurried, plain, a little bit ordinary. If it sounds like a person performing interest, or like a paragraph assembled in one breath, rewrite it.
+LENGTH AND SHAPE. One to three sentences. Under 70 words. Mention the detail
+you were given, plainly. Then either ask one relevant question, or make one
+specific modest offer. Sometimes an observation and an honest question is the
+whole message, and that is a complete and good line. Do not add a third move to
+satisfy a structure.
 
 This must read like one human talking to another human. Picture it: you just ran into this person at a park on a hot Thursday and you've got 20 seconds to say something real before the moment passes. Slightly caught off guard, completely genuine, zero rehearsed-pitch energy.
 
@@ -331,10 +397,10 @@ TECHNICAL
   Why: "my guess is you're manually pulling" is a stranger assuming they work badly, from one sentence of evidence. That is generic, not technical, and it asks nothing. Technical means asking about method as an equal. Never diagnose them.
 
 EXECUTIVE
-  GOLD: "Congratulations on the growth, Nathan. Small teams scaling plant sales usually hit fulfillment before they hit demand, and the fix tends to sit in the sequencing. I've built that pipeline before and would be glad to walk you through it."
-  What that does, and this is the whole shape of the tone: a warm human opening that acknowledges what they pulled off, then a confident READ of their situation based on how this normally goes, then a concrete offer from someone who has done it. Diagnosis and a clear offer. Not a summary, not a bare question.
-  ALSO GOLD, shorter: "I saw some of your Q3 numbers, and I believe I can halve your reporting time and expenses."
-  What that does: carries a claim worth answering and treats the reader as someone who decides things.
+  GOLD: "I saw some of your Q3 numbers, and I believe I can halve your reporting time and expenses. Worth a short call this week?"
+  What that does: short, carries a claim about YOUR OWN capability rather than a guess about theirs, and treats the reader as someone who decides things.
+  FAILS: "Congratulations on the growth, Nathan. Small teams scaling plant sales usually hit fulfillment before they hit demand, and the fix tends to sit in the sequencing."
+  Why: "usually" is an invented industry norm, and "hit fulfillment before demand" diagnoses a problem Nathan never mentioned. This line was in an earlier version of these instructions as a GOOD example, which taught exactly the wrong lesson. Executive means saying something confident about what YOU can do. It never means guessing at their operations and stating the guess as fact.
   FAILS: "I saw you just launched a new drink flavor and you're using the numbers to find which customers to target with it."
   Why: no beginning, no middle, no humanity, no warmth, no leadership, nothing. It says "I saw your launch and your numbers" and then stops. So what? A real CEO or COO reads that and moves on without a thought. Executive is NOT shorter-and-colder. It is authority plus warmth: acknowledge the move and what it took, say the one thing that actually matters about it, close like a peer.
 
@@ -360,7 +426,7 @@ exists anywhere. Learn the MOVES. Do not copy the words.
    MOVES: "I watched" is surveillance. The entire middle clause was padding and invented speculation, so it went. "I'm curious whether" became "I'd like to know whether". "those" became "the". The trailing "yet" was deleted.
 
 2. BEFORE: "I saw how you're structuring Food Terminal around wholesale buyers, and I'm curious how you're pulling the repeat-order signals from that client base. I'm hands-on with automation scripts for that kind of segmentation and would like to talk through what you're doing."
-   AFTER:  "Hi, I studied how you're structuring Food Terminal around wholesale buyers, and I wanted to inquire about how you're pulling the repeat-order signals from your client base. I'm hands-on with automation scripts for segmentation and would like to talk through what you're doing."
+   AFTER:  "Hi, I looked at how you're structuring Food Terminal around wholesale buyers. How are you pulling the repeat-order signals out of that? I write automation scripts for segmentation and would like to hear how you're doing it."
    MOVES: a plain "Hi," is welcome. "I saw how" became "I studied how". "I'm curious how" became "I wanted to inquire about how". "that client base" became "your client base". "that kind of segmentation" became "segmentation".
 
 3. BEFORE: "...the manual scheduling is eating up time you don't have to give."
@@ -434,32 +500,32 @@ Two tests before you return the line:
   2. Could this sentence be about a different company if you swapped the name?
      If yes, it is not specific enough yet.
 
-GIVE THEM SOMETHING TO WORK WITH. NEVER SEND A BARE QUESTION.
+EVERY CLAIM MUST COME FROM THE DETAIL YOU WERE GIVEN. THIS OUTRANKS EVERYTHING.
 
-Almost nobody writes to a stranger purely to find something out. A line whose
-entire payload is "I saw X, and I'd like to know Y" has asked the reader to do
-all the work and has offered nothing back. It reads like research, not outreach,
-and it is the most common way these lines fail.
+You have one sentence of information about a stranger. That is all you know.
 
-So every line must carry substance, and there is an order of preference:
+You may describe what the detail says. You may ask about something it implies.
+You may NOT state the implication as fact.
 
-  BEST. A point of view. Something you have worked out that they had not
-  considered: a read on where the constraint really sits, a gap in the method, an
-  angle worth testing. Example, on a survey about winged pad reception across age
-  groups: "have you thought about surveying women with heavier flow?" That single
-  question contributes an IDEA. It shows you thought about their problem rather
-  than about your pitch, and it is worth replying to on its own merits.
+Never invent: a timeline, a cause, a consequence, an industry norm, a number, an
+emotion, a struggle, a success, a motive, or a problem they did not mention.
+Sentences like "order volume outpaces the manual processing behind it within a
+month or two", "nobody wants to touch the join logic once it's working", or
+"most teams add dashboards instead of subtracting them" are all fabrications
+dressed as insight. They are the single worst failure this tool can produce,
+because they sound knowledgeable and are guesses.
 
-  WHEN THE DETAIL WON'T SUPPORT A POINT OF VIEW: a specific question PLUS a
-  concrete offer. "I'd like to know how you're handling the time gaps" is only
-  half a line. Finish it: "...I've dealt with the same gaps on archived sets and
-  can show you how we bridged them, if that's useful."
+If you catch yourself explaining what their situation is really like, stop and
+ask about it instead. "Is the ordering still manual on your side?" is honest.
+"The manual ordering is about to become your bottleneck" is not.
 
-  NEVER: an observation and a question with nothing given back.
+Do not turn the detail into a lesson, a slogan, a metaphor, a motivational
+reframe, or a claim about their industry. No "here's the truth", no "what
+matters is", no "X matters less than Y", no "you have more X than you realise",
+no "that's a different scoreboard", no "the kind of thing that", no "most
+people", no "the part people get wrong". These are templates, not thoughts.
 
-Do not invent a point of view the detail cannot support. A hollow insight is
-worse than an honest question with a real offer attached. If you only have
-enough to ask, ask well and bring something to the table alongside it.
+A short honest line beats a clever invented one every time.
 
 STOP DEFAULTING TO "I'M CURIOUS". It appeared in five of the eight lines above.
 That repetition is itself a tell. Rotate and pick what fits: "I'd like to know
@@ -482,6 +548,18 @@ the reader gets rather than what you want: "...and can have inputs that can save
 costs", "...this can make a difference in how you plan the season". Never bolt
 this on when you have nothing real to offer.
 
+THE BEST LINE THIS TOOL HAS PRODUCED. Use it as the bar.
+
+  "I tried your public dashboard with a date range spanning two calendar years
+   and the chart comes back blank. My guess is the query logic isn't handling
+   the year boundary right. I can walk you through a fix in 15-20 minutes, or
+   point you to where to look if you'd rather handle it yourself."
+
+Why it is the bar: it says what was actually done, describes what actually
+happened, hedges the diagnosis with "my guess is", makes a specific time-boxed
+offer, and gives an easy way out. Every claim in it is grounded. Nothing is
+invented. It contains no slogan, no metaphor and no lesson. Aim here.
+
 THE FAILURE PATTERN THAT KILLS EVERY TONE. This is the one to hunt for in your own draft:
   "I saw that Dunkin' just launched those new flavors and you're using the numbers to figure out who's actually trying them."
 That line has no purpose, no direction and nothing behind it. It is "I saw you did this, blah blah blah" dressed up. It reads like a bot summarising their homepage back to them. If your line is a restatement of something they already know about themselves, with nothing asked and nothing offered, throw it out and write a different one.
@@ -501,66 +579,55 @@ ${toneLabel ? `\nWrite this one in the ${toneLabel} tone. Go back to the ${toneL
 Return ONLY the line. No quotes, no preamble, no sign-off.`;
 
   try {
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        // SONNET, on purpose. Every failure in this tool has been an
-        // instruction-following failure, not a knowledge one, and this prompt is
-        // ~5,600 tokens of layered rules. Sonnet holds them; Haiku drops the
-        // quiet ones.
-        //
-        // Cost per line, with the rules block cached:
-        //   Haiku 4.5                        ~$0.0013
-        //   Sonnet 5, intro to 31 Aug 2026   ~$0.0026
-        //   Sonnet 5, from 1 Sept 2026       ~$0.0039   (list price returns to $3/$15)
-        //
-        // SEPTEMBER IS A REAL STEP UP. Around 1 Sept, check the spend. If it has
-        // moved more than you like, put "claude-haiku-4-5-20251001" back on this
-        // line and redeploy. That single swap cuts the bill by two thirds and
-        // nothing else needs to change.
-        model: "claude-sonnet-5",
-        // Headroom, not a target. Lines are now 2-4 sentences, and four long
-        // ones can reach ~140 tokens. At 200 a wordy line could be cut off
-        // mid-sentence, which looks broken. Output is billed on what is actually
-        // produced, so unused headroom costs nothing.
-        max_tokens: 300,
-        // cache_control marks the rules block as reusable. The first call in a
-        // five minute window pays a small premium to write the cache; every
-        // call after that reads it at a tenth of the input price. Bursty launch
-        // traffic is the best possible shape for this, which is exactly when
-        // the bill would otherwise hurt.
-        system: [
-          {
-            type: "text",
-            text: systemRules,
-            cache_control: { type: "ephemeral" },
-          },
-        ],
-        messages: [{ role: "user", content: userMessage }],
-      }),
-    });
-
-    if (!r.ok) {
-      // Log the real reason to Vercel's function logs so you can debug,
-      // without leaking anything to the visitor.
-      let why = "";
-      try { why = await r.text(); } catch {}
-      console.error("Anthropic error", r.status, why.slice(0, 500));
-      return res.status(502).json({ error: "Writer unavailable" });
+    // One call to the writer. Used twice at most: once normally, and once more
+    // only if the quality gate rejects the first line.
+    async function callModel(extraTurns) {
+      const r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": process.env.ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-5",
+          max_tokens: 300,
+          system: [
+            { type: "text", text: systemRules, cache_control: { type: "ephemeral" } },
+          ],
+          messages: [{ role: "user", content: userMessage }, ...(extraTurns || [])],
+        }),
+      });
+      if (!r.ok) {
+        let why = ""; try { why = await r.text(); } catch {}
+        console.error("Anthropic error", r.status, why.slice(0, 500));
+        throw new Error("upstream");
+      }
+      const d = await r.json();
+      return (d.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim().replace(/^["']|["']$/g, "");
     }
 
-    const data = await r.json();
-    let line = (data.content || [])
-      .filter((b) => b.type === "text")
-      .map((b) => b.text)
-      .join("")
-      .trim()
-      .replace(/^["']|["']$/g, "");
+    let line = await callModel();
+    let fails = gradeLine(line);
+
+    // ONE repair attempt. Handing back the exact failures works far better than
+    // regenerating blind, because the model can see what it did.
+    if (fails.length) {
+      console.log("quality gate rejected:", fails.join("; "));
+      try {
+        const repaired = await callModel([
+          { role: "assistant", content: line },
+          { role: "user", content:
+            "That line breaks the rules. Specifically: " + fails.join("; ") + ".\n\n" +
+            "Rewrite it. Keep only what the detail I gave you actually supports. " +
+            "Cut any claim about their industry, their timeline, their feelings or " +
+            "what other companies do. Shorter is better. Return ONLY the new line." },
+        ]);
+        const repairedFails = gradeLine(repaired);
+        // Keep whichever is cleaner. Never return something worse than we had.
+        if (repairedFails.length <= fails.length) { line = repaired; fails = repairedFails; }
+      } catch { /* repair failed, keep the first line */ }
+    }
 
     // Belt and braces on the dash rule. The prompt forbids em/en dashes, but a
     // model can still slip, and one dash undoes the whole "a human wrote this"
@@ -607,6 +674,9 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
 
     return res.status(200).json({ line });
   } catch (e) {
+    if (e && e.message === "upstream") {
+      return res.status(502).json({ error: "Writer unavailable" });
+    }
     console.error("write.js failed", e);
     return res.status(500).json({ error: "Something broke" });
   }
