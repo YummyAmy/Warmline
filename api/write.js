@@ -54,6 +54,8 @@ const BAD_PATTERNS = [
   /\bthat'?s a (?:different|real) \w+/i,
   /\bthe kind of thing that\b/i,
   /\btakes (?:real|some) (?:nerve|conviction|guts)\b/i,
+  /\ba real bet\b/i, /\breal (?:conviction|growth|talk)\b/i,
+  /\bsomething real\b/i,
   /\bmost (?:people|teams|companies|founders|newsletters|brands)\b/i,
   /\b(?:people|teams|companies) (?:usually|typically|generally|tend to)\b/i,
   /\bthe part (?:people|most) \w+ get wrong\b/i,
@@ -63,6 +65,16 @@ const BAD_PATTERNS = [
   /\byou'?re not behind\b/i,
   /\byou'?re doing better than you (?:think|realise|realize)\b/i,
   /\bisn'?t behind\b/i,
+  // Invented familiarity. The line claims a history the visitor never supplied.
+  // "I read your post" is fine; "I read a few of your posts" is a fabrication.
+  /\bchewing on it\b/i,
+  /\bi'?ve been (?:thinking about|sitting with) (?:it|this|that) since\b/i,
+  /\bi read (?:a few|several|some of|through a few)\b/i,
+  /\bi'?ve been following\b/i,
+  /\bfor (?:months|weeks|a while) now\b/i,
+  /\bthe writing(?:'?s| is) the reason\b/i,
+  /\bi (?:also )?(?:track|do) (?:that|the same|this) (?:for )?my own\b/i,
+  /\bever since\b/i,
 ];
 
 // Words that assert on the reader's behalf, or that were on the banned list and
@@ -300,13 +312,13 @@ export default async function handler(req, res) {
   // where nearly all the cost of this tool lives. Caching it is the difference
   // between roughly $19/month and roughly $4/month at the same traffic.
   // Do not interpolate anything per-prospect in here or the cache stops hitting.
-  const systemRules = `You write the FIRST LINE of a cold outreach message — the opener that proves it isn't spam. Not the whole message. One to three sentences, usually under 70 words, that show real attention to this specific person.
+  const systemRules = `You write the FIRST LINE of a cold outreach message — the opener that proves it isn't spam. Not the whole message. Two to four sentences that show real attention to this specific person.
 
-LENGTH AND SHAPE. One to three sentences. Under 70 words. Mention the detail
-you were given, plainly. Then either ask one relevant question, or make one
-specific modest offer. Sometimes an observation and an honest question is the
-whole message, and that is a complete and good line. Do not add a third move to
-satisfy a structure.
+LENGTH AND SHAPE. Two to four sentences. Mention the detail you were given,
+plainly. Then either ask one relevant question, or make one specific modest
+offer. Sometimes an observation and an honest question is the whole message,
+and that is a complete and good line. Do not add another move just to fill the
+fourth sentence.
 
 This must read like one human talking to another human. Picture it: you just ran into this person at a park on a hot Thursday and you've got 20 seconds to say something real before the moment passes. Slightly caught off guard, completely genuine, zero rehearsed-pitch energy.
 
@@ -391,10 +403,12 @@ DIRECT
   Why: direct means the point arrives early, not that the line is colder or emptier. Confident, not clipped.
 
 TECHNICAL
-  GOLD: "Congratulations on the launch of your latest flavor and for always raising the bar. I'd like to know how you're pulling segments like launch numbers if there's a pipeline best practice you're using. I'm hands-on with automation and will appreciate an opportunity to talk about it with you."
-  What that does: congratulates first, asks a peer-level question about METHOD, mentions its own hands-on experience only so far as it makes the question reasonable to ask, then closes plainly and without pressure.
-  FAILS: "I saw you're using the new flavor launch numbers to find which customers are most likely to try it again, and my guess is you're manually pulling those segments instead of automating them."
-  Why: "my guess is you're manually pulling" is a stranger assuming they work badly, from one sentence of evidence. That is generic, not technical, and it asks nothing. Technical means asking about method as an equal. Never diagnose them.
+  GOLD: "I noticed the subgroup percentages are weighted, but the unweighted bases aren't shown beside them. Was that a reporting choice, or are the base sizes somewhere else in the report?"
+  What that does: uses the right words for the reader's actual work, asks one precise question about something visible in the detail, explains nothing, and adds no adjacent concept in order to sound technical.
+  FAILS 1: "I saw you're using the launch numbers to find which customers might try it again, and my guess is you're manually pulling those segments instead of automating them."
+  Why: a stranger assuming they work badly, from one sentence of evidence.
+  FAILS 2: reaching for a nearby technical idea the detail never mentioned, to prove you are a practitioner. If the detail says the weighting looks fine, do not raise small-cell suppression. If it says the dashboard is slow, do not raise index fragmentation.
+  Why: that is not expertise, it is vocabulary. Technical means being precise about what is actually in front of you. Correct domain words, one exact question, no explaining.
 
 EXECUTIVE
   GOLD: "I saw some of your Q3 numbers, and I believe I can halve your reporting time and expenses. Worth a short call this week?"
@@ -427,7 +441,7 @@ exists anywhere. Learn the MOVES. Do not copy the words.
 
 2. BEFORE: "I saw how you're structuring Food Terminal around wholesale buyers, and I'm curious how you're pulling the repeat-order signals from that client base. I'm hands-on with automation scripts for that kind of segmentation and would like to talk through what you're doing."
    AFTER:  "Hi, I looked at how you're structuring Food Terminal around wholesale buyers. How are you pulling the repeat-order signals out of that? I write automation scripts for segmentation and would like to hear how you're doing it."
-   MOVES: a plain "Hi," is welcome. "I saw how" became "I studied how". "I'm curious how" became "I wanted to inquire about how". "that client base" became "your client base". "that kind of segmentation" became "segmentation".
+   MOVES: a plain "Hi," is welcome. "that client base" became "your client base", because "your" is what a person says. "that kind of segmentation" became "segmentation". The question got shorter and lost its throat-clearing.
 
 3. BEFORE: "...the manual scheduling is eating up time you don't have to give."
    AFTER:  "...the manual scheduling is eating up time that could be used for other processes."
@@ -514,6 +528,31 @@ month or two", "nobody wants to touch the join logic once it's working", or
 "most teams add dashboards instead of subtracting them" are all fabrications
 dressed as insight. They are the single worst failure this tool can produce,
 because they sound knowledgeable and are guesses.
+
+THE SAME RULE APPLIES TO THE SENDER, AND THIS IS THE ONE THAT KEEPS BREAKING.
+
+You know nothing about the person writing this either. The outreach-reason field
+is the ONLY source of facts about them. Everything else is invention.
+
+Do not invent anything the sender read, tried, tested, followed, noticed over
+time, built, tracks, believes, likes, admires, or has been thinking about.
+
+  BANNED, all of them fabrications:
+    "I've been chewing on it since"        (invents an ongoing reaction)
+    "I read a few issues of Threadline"    (invents quantity)
+    "I've been following your work"        (invents history)
+    "the writing's the reason I'd stick around"  (invents an opinion)
+    "I track replies for my own newsletter too"  (invents the sender's habits)
+    "I've built that pipeline before"      (invents experience)
+
+If the detail describes a post, "I read your post" is fine, because the visitor
+told you the post exists. Expanding that into months of readership, several
+issues, or an admiring opinion is not.
+
+NEVER INVENT PRAISE. Do not say the sender likes, rates or admires the
+recipient's writing, product, company or approach unless the visitor supplied
+that opinion themselves. Manufactured warmth is the most embarrassing thing this
+tool can produce, because the recipient may reply and find out it was hollow.
 
 If you catch yourself explaining what their situation is really like, stop and
 ask about it instead. "Is the ordering still manual on your side?" is honest.
@@ -624,8 +663,9 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
             "what other companies do. Shorter is better. Return ONLY the new line." },
         ]);
         const repairedFails = gradeLine(repaired);
-        // Keep whichever is cleaner. Never return something worse than we had.
-        if (repairedFails.length <= fails.length) { line = repaired; fails = repairedFails; }
+        // STRICTLY fewer. One violation swapped for a different one is not an
+        // improvement, and <= was quietly accepting exactly that.
+        if (repairedFails.length < fails.length) { line = repaired; fails = repairedFails; }
       } catch { /* repair failed, keep the first line */ }
     }
 
@@ -659,6 +699,109 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
 
     // Stripping a leading word can leave the line starting in lower case.
     if (line) line = line.charAt(0).toUpperCase() + line.slice(1);
+
+    // --- GROUNDING CHECK ------------------------------------------------
+    // The regex gate catches words and shapes. It cannot know that the visitor
+    // never read several issues of Threadline, or that nobody said the
+    // weighting "looks solid". Only a reader comparing the line against the
+    // facts can catch an invented one.
+    //
+    // So a second, cheap model call does exactly that and nothing else. It sees
+    // ONLY the four facts and the line, and returns a list of claims that are
+    // not supported. Haiku is used because comparing two short texts is a much
+    // easier job than writing, and it costs about a fifth as much.
+    //
+    // ~$0.0008 per line. You said quality beats a dollar or two. This is that
+    // decision, written down.
+    async function ungroundedClaims(candidate) {
+      const facts =
+        "Name: " + (name || "(none)") + "\n" +
+        "Company: " + (company || "(none)") + "\n" +
+        "Detail the sender knows: " + (detail || "(none)") + "\n" +
+        "Why the sender is reaching out: " + (offerText || "(not stated)");
+      try {
+        const r = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": process.env.ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify({
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 250,
+            messages: [{ role: "user", content:
+`You are checking one sentence of cold outreach for invented claims.
+
+THESE ARE THE ONLY FACTS THAT EXIST:
+${facts}
+
+THE LINE:
+"${candidate}"
+
+List every claim in the line that those facts do not support. Check claims
+about the RECIPIENT and about the SENDER equally. Things that count as
+unsupported: reading more than was stated, following someone over time,
+having an opinion nobody supplied, praise nobody gave, prior experience,
+habits, timelines, numbers, causes, industry norms, or a problem nobody
+mentioned.
+
+Referring to the detail itself is supported. Asking a question is never a
+claim. Ordinary greetings and offers matching the stated reason are fine.
+
+Reply with JSON only:
+{"supported": true}
+or
+{"supported": false, "claims": ["short quote", "short quote"]}` }],
+          }),
+        });
+        if (!r.ok) return [];
+        const d = await r.json();
+        const txt = (d.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+        const j = JSON.parse(txt.slice(txt.indexOf("{"), txt.lastIndexOf("}") + 1));
+        return j.supported ? [] : (j.claims || []).slice(0, 5);
+      } catch {
+        return []; // a checker failure must never block a good line
+      }
+    }
+
+    let invented = await ungroundedClaims(line);
+    if (invented.length) {
+      console.log("grounding check rejected:", invented.join(" | "));
+      try {
+        const regrounded = await callModel([
+          { role: "assistant", content: line },
+          { role: "user", content:
+            "These parts of that line are not supported by anything I told you: " +
+            invented.map(c => '"' + c + '"').join(", ") + ".\n\n" +
+            "I never said any of that. Rewrite the line using only what I actually " +
+            "gave you. If removing them leaves you with less to say, say less. " +
+            "Return ONLY the new line." },
+        ]);
+        const stillInvented = await ungroundedClaims(regrounded);
+        if (stillInvented.length < invented.length && !gradeLine(regrounded).length) {
+          line = regrounded; invented = stillInvented;
+        }
+      } catch { /* keep the first line */ }
+    }
+
+    if (invented.length) {
+      console.log("returned as ungrounded:", invented.join(" | "));
+      return res.status(422).json({
+        error: "I couldn't write that without making something up. Give me one more detail you actually know about them and try again.",
+      });
+    }
+    // ---------------------------------------------------------------------
+    // If the line still fails after a repair, do NOT hand it over. Selling
+    // someone a "human" opener that our own checker rejected is worse than
+    // admitting the detail was too thin to work with. This costs a generation
+    // but protects the promise the whole product is built on.
+    if (fails.length) {
+      console.log("returned to visitor as unusable:", fails.join("; "));
+      return res.status(422).json({
+        error: "I couldn't get a clean line from that detail. Add one more specific thing you know about them and try again.",
+      });
+    }
 
     // Count it. Done inline, so there's no second network hop and no COUNT_URL
     // environment variable to configure or get wrong.
