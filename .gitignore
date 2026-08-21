@@ -1,5 +1,3 @@
-NOTES_PRIVATE_do_not_push.md
-COWORK_HANDOFF.md
 .DS_Store
 .vercel
 .env
@@ -14,9 +12,7 @@ index.html.backup
 social/
 
 # Internal working notes. Useful locally, but a public repo shouldn't carry a
-# roadmap or handoff notes: it tells strangers what isn't built yet.
-HANDOFF.md
-HANDOFF-COWORK.md
+# roadmap: it tells strangers what isn't built yet.
 V2_PLAN.md
 icon-512.png
 share-card-comingsoon.png
