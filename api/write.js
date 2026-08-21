@@ -75,6 +75,33 @@ const BAD_PATTERNS = [
   /\bthe writing(?:'?s| is) the reason\b/i,
   /\bi (?:also )?(?:track|do) (?:that|the same|this) (?:for )?my own\b/i,
   /\bever since\b/i,
+
+  // THE FLOATING VERDICT. A standalone sentence delivering a judgment with
+  // nothing to lean on. Four real outputs in a row had one, three of them built
+  // as "X, not Y". It is a pull quote, not speech, and it is what makes the
+  // lines read as assembled rather than spoken. The fix in the prompt is to
+  // merge the judgment into the sentence before it; these catch the ones that
+  // slip through anyway.
+  /(?:^|[.!?]\s+)that'?s (?:an?|the|not)\b/i,
+  /(?:^|[.!?]\s+)that takes\b/i,
+  /\w+,\s*not\s+(?:an?\s+)?\w+\s*[.!?]/i,
+  /,\s*nothing\s+\w+/i,
+  /\bnot (?:an accident|by accident|decorative|a coincidence|by chance)\b/i,
+  /\bgrew up together\b/i,
+
+  // DISCOVERY QUESTIONS. Questions whose answer only tells you who to sell to.
+  // The prompt bans them in three paragraphs and they came out anyway, so they
+  // are enforced here instead.
+  /\b(?:who'?s|who is) (?:handling|running|doing|managing|leading|behind)\b/i,
+  /\bwho(?:'?s| is) (?:in charge of|responsible for)\b/i,
+  /\b(?:you|yourself) or (?:a|the|your|someone|somebody)\b/i,
+  /\bin-?house or\b/i,
+  /\bsplit (?:across|between)\b/i,
+  /\bis (?:that|it) still you\b/i,
+  /\bhas (?:that|it) moved to\b/i,
+  /\bwhoever'?s\b/i,
+  /\bwhat are you using for\b/i,
+  /\bhandled internally\b/i,
 ];
 
 // Words that assert on the reader's behalf, or that were on the banned list and
@@ -99,20 +126,106 @@ function gradeLine(line) {
     const m = line.match(re);
     if (m) fails.push('the phrase "' + m[0] + '"');
   }
+  // ROOM TO BREATHE. These were 85 words and 4 sentences, which was a budget
+  // decision wearing a craft decision's clothes. The owner's instruction is that
+  // quality is not traded for a dollar or two, so the ceiling is now set where
+  // a natural line stops sounding natural, not where it stops being cheap.
   const words = line.trim().split(/\s+/).length;
-  if (words > 85) fails.push("it runs to " + words + " words, which is too long");
+  if (words > 120) fails.push("it runs to " + words + " words, which is too long");
   const sentences = (line.match(/[.!?](?:\s|$)/g) || []).length;
-  if (sentences > 4) fails.push("it runs to " + sentences + " sentences");
-  // A FLOOR AS WELL AS A CEILING. Two sentences is where this drifts when it is
-  // being careful: an observation and a question, with the sentence that
-  // actually carries a thought left out. There is no room in two sentences for
-  // "here is what I saw, here is what I think about it, here is what I want",
-  // so the middle one always goes. Three is the floor for that reason.
-  if (sentences && sentences < 3) {
-    fails.push("it is only " + sentences + " sentence" + (sentences === 1 ? "" : "s") +
-      ", so it has no room to say what you THINK about what you saw. Three is the floor");
+  if (sentences > 5) fails.push("it runs to " + sentences + " sentences");
+  // NO THREE-SENTENCE FLOOR, and the reason matters.
+  //
+  // There was one here for exactly one commit. It rejected all five gold lines,
+  // including both the owner wrote by hand. Every one of them is two sentences:
+  //
+  //   "Hi Damon, I saw a video of Foxtail on Instagram and the branding is
+  //    intentional. What other platforms are you posting your content on, and
+  //    have you tried using Pinterest for reach?"
+  //
+  // That is the target, and it is two sentences, because the judgment is joined
+  // to the observation with "and" instead of being given a sentence of its own.
+  // Merging is the whole fix. A floor of three forces the judgment back out into
+  // a standalone sentence, which is precisely what produces "That's a deliberate
+  // choice, not an accident."
+  //
+  // Sentence count was always a proxy for "does this say anything", and a bad
+  // one. The emptiness half of checkLine() tests that directly. So the only
+  // floor left is a stub: one sentence really is too little.
+  if (sentences === 1) {
+    fails.push("it is a single sentence, so there is no room for both a thought and an ask");
   }
   return fails;
+}
+
+// --- NOUNS THAT CAME FROM NOWHERE ------------------------------------------
+// The worst failures all share one mechanic: the line names a THING nobody
+// mentioned, then has an opinion about the thing it just invented. Given only
+// "branding and content creation", real outputs produced "the captions", "a
+// defined style guide somebody's enforcing", and "drifting by platform". None
+// of those objects exist. Each one reads as insight and is a guess.
+//
+// This function REJECTS NOTHING on its own, deliberately. A wordlist cannot
+// tell an invented noun from an ordinary one, and a false rejection costs a
+// visitor their line. What it does instead is cheap and reliable: find the
+// content words in the line that appear nowhere in anything the visitor typed,
+// and hand that shortlist to the grounding checker, which CAN judge them.
+// Deterministic detection, model judgment. The checker stops having to notice
+// the invention on its own and only has to rule on a named suspect.
+const COMMON = new Set(`a an the and or but so if then than that this these those
+i you he she it we they me him her us them my your his its our their mine yours
+is are was were be been being am do does did done have has had having
+will would can could should may might must shall
+of in on at to for from with by about into over under after before between
+not no nor only just even also too very much many more most less least
+what which who whom whose when where why how
+one two three first second next last other another same different
+saw see seen look looked looking notice noticed read reading
+think thought feel feels felt like liked want wanted know knew ask asked asking
+say said tell told make made making take takes took get got give gave
+work works working thing things way ways side part parts lot
+time times day days week weeks month months year years
+good great nice lovely strong clear true right wrong big small long short
+something anything nothing everything someone anyone everyone
+there here now still yet already again always never sometimes
+cannot don't doesn't didn't isn't aren't wasn't weren't wouldn't
+hi hey hello thanks thank please sorry congratulations
+happy glad interested keen worth
+i'd i'm i've you'd you're you've it's that's there's here's they're
+across around through within without along together
+help helps helped use used using try tried trying build built building
+run runs running move moves moved keep keeps kept push pushed
+question questions answer answers reply replies
+company companies team teams people person
+minutes hour hours call short week`.split(/\s+/).filter(Boolean));
+
+// "Foxtail's" and "Foxtail" are the same word, and so are "brand" and
+// "branding". Without this the shortlist fills up with possessives and plurals
+// of things the visitor definitely did type, which trains the checker to skim.
+function stems(w) {
+  const base = w.replace(/['’]s$/, "").replace(/['’]$/, "");
+  const out = new Set([base, base + "s", base + "ing"]);
+  if (base.endsWith("s")) out.add(base.slice(0, -1));
+  if (base.endsWith("ing")) out.add(base.slice(0, -3));
+  if (base.endsWith("ed")) out.add(base.slice(0, -2));
+  return out;
+}
+
+function novelNouns(line, sources) {
+  const from = new Set();
+  for (const s of sources) {
+    for (const w of String(s || "").toLowerCase().match(/[a-z][a-z'’-]*/g) || []) {
+      for (const v of stems(w)) from.add(v);
+    }
+  }
+  const out = [];
+  for (const w of (line.toLowerCase().match(/[a-z][a-z'’-]{3,}/g) || [])) {
+    const forms = [...stems(w)];
+    if (forms.some(v => COMMON.has(v) || from.has(v))) continue;
+    const base = forms[0];
+    if (!out.includes(base)) out.push(base);
+  }
+  return out.slice(0, 12);
 }
 // ---------------------------------------------------------------------------
 
@@ -334,14 +447,59 @@ actually want to know.
 Reasonable, specific, warm, and worth the room's time. That is the whole job.
 If the line would sound odd said out loud in that room, it is wrong.
 
-THE SHAPE. Three or four sentences, in this order:
-  1. WHAT YOU SAW. Plainly, and where you saw it if you were told where.
-  2. WHAT YOU THINK ABOUT IT. One honest judgment, in your own words.
-  3. WHAT YOU WANT. A real question, a small suggestion, or a specific offer.
+THE SHAPE. Three to five sentences. But the shape is NOT a form to fill in, and
+this is where this tool has failed hardest, so read the next part twice.
 
-Sentence 2 is what makes it human and it is the one a machine always skips.
-A line with 1 and 3 and nothing in between is a form, not a message.
-THREE SENTENCES IS THE FLOOR. FOUR IS THE CEILING. Never return two.
+WRONG, and it is what a machine reaches for every single time:
+    sentence 1: what I saw.
+    sentence 2: a verdict about it, standing on its own.
+    sentence 3: the ask.
+
+That middle sentence, alone, with nothing to lean on, always comes out as
+rhetoric. Every one of these is a real line this tool produced:
+
+    "That's a deliberate choice, not an accident."
+    "The visual identity feels deliberate, not decorative."
+    "That takes a defined style guide somebody's enforcing."
+    "...they feel like they grew up together, nothing bolted on."
+
+Four lines, one shape: a floating verdict, usually built as "X, not Y". Nobody
+speaks this way. It is a pull quote. Say it out loud at the conference and the
+room would wince.
+
+RIGHT: THE JUDGMENT RIDES INSIDE THE OBSERVATION. Same sentence. This is how
+people talk, and it is what the owner does every time she writes one by hand:
+
+    "I saw a video of Foxtail on Instagram AND THE BRANDING IS INTENTIONAL."
+        One sentence. What she saw, then what she thinks, joined by "and".
+    "I saw A LOVELY video of Foxtail from a content creator on TikTok."
+        The judgment is one adjective, sitting inside the observation.
+    "I was interested in the pricing-by-outcome section AND THE COMMENTS WERE
+     INTERESTING."
+        The same move again.
+
+THE RULE: your opinion never gets its own sentence. Join it to what you saw
+with "and", or fold it in as a single adjective. If you have written a sentence
+starting with "That's", "That takes", "It's not" or "The X feels Y", delete it
+and merge what it was reaching for into the sentence before it.
+
+So the real shape is closer to:
+    1. What you saw AND what you make of it. One sentence, joined.
+    2. Optionally, one more thing you noticed, or why you are asking.
+    3. What you want.
+
+LENGTH. Two to five sentences, and stop counting. Every gold line on this page
+is two, because merging the judgment into the observation is what produces two.
+That is the house style, not a shortfall.
+
+Two is right when the first sentence carries both what you saw and what you make
+of it, and the second asks for something real. Two is WRONG when the first
+sentence is a bare restatement and the second is a question, because then
+nothing was ever said. The test is never the count. It is whether the reader
+finishes the line holding something they did not have before.
+
+Go to four or five only when the detail genuinely carries it. Never pad to reach
+a number, and never trim a real thought to stay under one.
 
 NEVER ASK A DISCOVERY QUESTION. This is the most common way this tool fails.
 
@@ -353,6 +511,13 @@ before pitching, and the reader can always tell.
   BANNED: "Are you handling that in-house or is it split across a few people?"
   BANNED: "Who's running that right now, you or a team?"
   BANNED: "What are you using for that at the moment?"
+  BANNED: "Are you still directing the visual style yourself, or has that moved
+           to whoever's shooting it?"
+           That last one is the same question in longer clothes. Adding words
+           does not disguise it. Any question of the form "is it still you, or
+           is it someone else now" is a discovery question no matter how it is
+           dressed, because the only thing it establishes is who you would need
+           to sell to.
 
 Ask about the WORK instead. The choice they made. The thing you noticed. The
 thing you would still want to know if you had nothing to sell.
@@ -390,6 +555,16 @@ TECHNICAL
   visible in the detail, nothing explained, no adjacent idea dragged in.
   FAILS: reaching for a nearby technical concept the detail never mentioned in
   order to sound like a practitioner. That is vocabulary, not expertise.
+  TECHNICAL MEANS EXACTLY THREE THINGS: the correct words for the reader's own
+  work, one precise question, and no explaining. It does NOT mean importing a
+  second technical idea to prove you belong. If the detail is thin, technical
+  does not get to invent depth. It asks the sharpest possible question about the
+  one thing it was given, and stops. A real failure:
+    "the branding stays consistent instead of drifting by platform. That takes a
+     defined style guide somebody's enforcing."
+  That is not technical. It is guessing at an operations detail and stating the
+  guess. If the detail has no technical surface, ask a plain, exact question
+  about what IS there and let it be short.
 
 EXECUTIVE
   GOLD: "I saw some of your Q3 numbers, and I believe I can halve your reporting time and expenses. Worth a short call this week?"
@@ -471,6 +646,26 @@ A judgment is not the same as a compliment, and the judgment is the better move.
 "The branding is intentional" is an observation with a point of view. "Your
 branding is incredible" is flattery with nothing inside it. Say what you think
 is TRUE about the thing, not how much you liked it.
+
+EVERY CONCRETE NOUN IN YOUR LINE MUST COME FROM THE DETAIL. This is the check
+that catches the worst failures, and it is mechanical enough to actually run.
+
+If the detail says "branding and content", then branding and content are the
+only things that exist in the world. The moment you write "the captions", "the
+style guide", "short-form video", "the platforms", you have invented a thing and
+then had an opinion about the thing you invented. Real failures from this tool:
+
+    "the visuals carry more of the story than THE CAPTIONS do"
+        Nobody said captions exist, let alone what they carry.
+    "That takes A DEFINED STYLE GUIDE somebody's enforcing"
+        Invents a document, and a person enforcing it.
+    "the branding stays consistent instead of DRIFTING BY PLATFORM"
+        Invents several platforms, and invents that other brands drift.
+
+BEFORE RETURNING THE LINE, LIST ITS NOUNS. Any noun that is not in the detail,
+not in the outreach reason, and not ordinary English gets cut. If cutting it
+leaves you with less to say, say less. A comparison is the most common smuggler
+here: "more X than Y" requires that you were told about Y. You were not.
 
 NEVER INVENT: a timeline, a cause, a consequence, an industry norm, a number, a
 struggle, a motive, or a problem they did not mention. "Order volume outpaces
@@ -630,7 +825,9 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
         },
         body: JSON.stringify({
           model: "claude-sonnet-5",
-          max_tokens: 300,
+          // Was 300. A five-sentence ceiling needs headroom, and a truncated
+          // line is a wasted call, which costs more than the tokens saved.
+          max_tokens: 500,
           system: [
             { type: "text", text: systemRules, cache_control: { type: "ephemeral" } },
           ],
@@ -749,6 +946,23 @@ ${facts}
 THE LINE:
 "${candidate}"
 
+WORDS IN THE LINE THAT APPEAR NOWHERE IN THOSE FACTS:
+${novelNouns(candidate, [name, company, detail, offerText]).join(", ") || "(none)"}
+
+Each of those is a suspect, not a verdict. Most will be ordinary English and
+you should let them go. But if one of them NAMES A THING that the facts never
+mention, an object, a document, a channel, a metric, a piece of content, a
+tool, then the line invented that thing and then had an opinion about it.
+That is the worst failure here and you must flag it. Real examples: given only
+"branding and content", the words "captions", "style guide" and "platform"
+were all inventions of exactly this kind.
+
+IMPORTANT EXCEPTION. Naming a thing in order to SUGGEST it is not an
+invention. "Have you tried Pinterest for reach?" invents nothing about the
+recipient, it proposes something to them, and Pinterest will show up on the
+suspect list every time. Let it go. The failure is naming a thing and then
+asserting something about it as though it already existed.
+
 JOB 1, INVENTED FACTS. Be strict about what counts, because over-flagging
 here is worse than missing one. Flag a claim ONLY if it asserts a FACT that
 is absent from the list above AND falls into one of these six:
@@ -757,7 +971,8 @@ is absent from the list above AND falls into one of these six:
   3. the sender's own experience, credentials, habits or track record
   4. a number, date or measurement nobody supplied
   5. an industry norm, or what other companies and teams do
-  6. a problem, cause or consequence the detail never mentioned
+  6. a problem, cause, consequence, or THING the detail never mentioned. An
+     invented object counts even when the opinion about it is flattering.
 
 Everything else passes. DO NOT flag any of these:
   - an opinion or judgment about something that IS in the detail. If the
@@ -803,12 +1018,15 @@ Reply with JSON only, nothing else:
     // is not an improvement and must not be accepted as one.
     const badness = (c) => c.claims.length + (c.empty ? 1 : 0);
 
-    // TWO repair rounds, not one. A single round was too few: the writer has to
-    // land inside a narrow band (grounded AND not empty AND three sentences) and
-    // it often needs a second look to get there. Each round costs one writer
-    // call plus one Haiku check, and only bad lines pay it.
+    // THREE repair rounds. The writer has to land inside a narrow band, which is
+    // grounded AND not empty AND three to five sentences AND free of the
+    // floating verdict, and it often needs more than one look to get there.
+    // Each round costs one writer call plus one Haiku check, roughly a third of
+    // a cent, and ONLY bad lines pay it. The instruction is that quality is not
+    // traded for a dollar or two, so the loop is sized for the line, not the
+    // bill. It still breaks the moment a round stops improving things.
     let check = await checkLine(line);
-    for (let round = 0; round < 2 && badness(check); round++) {
+    for (let round = 0; round < 3 && badness(check); round++) {
       if (check.claims.length) console.log("grounding check rejected:", check.claims.join(" | "));
       if (check.empty) console.log("emptiness check rejected:", line);
       try {
