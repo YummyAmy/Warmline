@@ -361,7 +361,7 @@ HOW IT ENDS. This matters more than how it starts, and it is where machine writi
 - A line that ends "...which is the kind of thing I help people fix" is a brochure. A line that ends "...if you want to go through it together, I'm happy to" is a person. Same information, opposite effect.
 - Real questions are allowed and encouraged: "what do you think a reasonable floor is?", "do you already have a fix for it?", "have you tried X?" A question hands them something easy to reply to, which is the entire point of an opener.
 - Offers must be small, specific and easy to refuse. "We could look at your scripts together if you want." Not "I'd love to hop on a call." Not "let's connect."
-- If no reason for reaching out was given above, don't invent an offer. End on a genuine question instead.
+- If no reason for reaching out was given above, you may still suggest ONE small thing that follows directly from the detail: a channel worth trying, something worth looking at, a question worth asking. "Have you tried Pinterest for reach?" is a real suggestion and costs them nothing to ignore. What you may NEVER do without a stated reason is propose a call, a meeting, co-creating anything, or a service you sell. Keep the suggestion refusable in four words. If the detail genuinely supports no suggestion, end on a real question instead.
 - LEAVE A DOOR OPEN. If the detail describes a problem, gesture at WHERE you'd look first without explaining the fix. Name the direction, never the solution. "I think it's the way the workflows are sequencing" opens a door. "You need to reorder your workflow triggers so the sync runs last" closes it, and they no longer need to reply.
   The opener's only job is to earn a reply. Give them one specific thing they'll want to hear more about, and stop talking. If you find yourself explaining, cut the sentence.
   Never fake this. Only point at something the detail actually supports. A vague tease ("I have some ideas") is worse than saying nothing.
@@ -549,10 +549,40 @@ If the detail describes a post, "I read your post" is fine, because the visitor
 told you the post exists. Expanding that into months of readership, several
 issues, or an admiring opinion is not.
 
-NEVER INVENT PRAISE. Do not say the sender likes, rates or admires the
-recipient's writing, product, company or approach unless the visitor supplied
-that opinion themselves. Manufactured warmth is the most embarrassing thing this
-tool can produce, because the recipient may reply and find out it was hollow.
+A REACTION IS NOT A FABRICATION. This distinction is the whole game, and getting
+it wrong in the safe direction is what makes lines that say nothing.
+
+You may have an opinion about something you were told. You may not invent
+something to have an opinion about.
+
+  ALLOWED, when the detail mentions their branding:
+    "the branding is intentional"
+    "that's a considered piece of branding"
+    "the videos are doing more work than the copy is"
+  BANNED, because nobody supplied any of it:
+    "I've been following your branding for a while"   (invents history)
+    "I read a few of your posts"                      (invents quantity)
+    "your branding is better than most in the space"  (invents a comparison)
+
+The test: could the sender have thought this from the one detail alone? Then it
+is theirs to think, and saying it out loud is what makes the line sound like a
+person rather than a form. If the thought needs a second fact nobody gave you,
+or a comparison to companies you have never seen, it is invented.
+
+A judgment is not the same as praise, and the judgment is the better move.
+"The branding is intentional" is an observation with a point of view. "Your
+branding is incredible" is flattery with nothing inside it. Name what you think
+is TRUE about the thing, not how much you liked it. Empty compliments are the
+most embarrassing thing this tool can produce, because the recipient may reply
+and find out there was nothing behind them.
+
+SAYING NOTHING IS ALSO A FAILURE, and it is the one you will drift towards,
+because a line that only restates the input can never be caught inventing
+anything. It is still a bad line. "I looked at their branding and content. Who
+handles that, you or a team?" breaks no rule on this page and is worth nothing
+to the person receiving it. Every line must give the reader something they did
+not have before they opened it: a thought about their work, a suggestion, or an
+offer. A restatement plus a question is not that.
 
 If you catch yourself explaining what their situation is really like, stop and
 ask about it instead. "Is the ordering still manual on your side?" is honest.
@@ -700,20 +730,28 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
     // Stripping a leading word can leave the line starting in lower case.
     if (line) line = line.charAt(0).toUpperCase() + line.slice(1);
 
-    // --- GROUNDING CHECK ------------------------------------------------
+    // --- GROUNDING AND EMPTINESS CHECK -----------------------------------
     // The regex gate catches words and shapes. It cannot know that the visitor
     // never read several issues of Threadline, or that nobody said the
     // weighting "looks solid". Only a reader comparing the line against the
     // facts can catch an invented one.
     //
-    // So a second, cheap model call does exactly that and nothing else. It sees
-    // ONLY the four facts and the line, and returns a list of claims that are
-    // not supported. Haiku is used because comparing two short texts is a much
-    // easier job than writing, and it costs about a fifth as much.
+    // So a second, cheap model call does exactly that. It sees ONLY the four
+    // facts and the line. Haiku is used because comparing two short texts is a
+    // much easier job than writing, and it costs about a fifth as much.
+    //
+    // IT NOW ASKS TWO QUESTIONS, NOT ONE, in the same call, so this costs
+    // nothing extra. The first version only hunted for lies, and a system that
+    // is only punished for lying learns to say nothing:
+    //   "I looked at Foxtail Coffee's branding and content. Who's handling that
+    //    work right now, you or a team?"
+    // Nothing invented, no banned word, no bad pattern. Also worth nothing to
+    // the man reading it. Safe and empty is its own failure and needs its own
+    // check, because no wordlist can spot it.
     //
     // ~$0.0008 per line. You said quality beats a dollar or two. This is that
     // decision, written down.
-    async function ungroundedClaims(candidate) {
+    async function checkLine(candidate) {
       const facts =
         "Name: " + (name || "(none)") + "\n" +
         "Company: " + (company || "(none)") + "\n" +
@@ -731,7 +769,7 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
             model: "claude-haiku-4-5-20251001",
             max_tokens: 250,
             messages: [{ role: "user", content:
-`You are checking one sentence of cold outreach for invented claims.
+`You are checking one sentence of cold outreach. Two separate jobs.
 
 THESE ARE THE ONLY FACTS THAT EXIST:
 ${facts}
@@ -739,56 +777,92 @@ ${facts}
 THE LINE:
 "${candidate}"
 
-List every claim in the line that those facts do not support. Check claims
-about the RECIPIENT and about the SENDER equally. Things that count as
-unsupported: reading more than was stated, following someone over time,
-having an opinion nobody supplied, praise nobody gave, prior experience,
-habits, timelines, numbers, causes, industry norms, or a problem nobody
-mentioned.
+JOB 1, INVENTED FACTS. List every claim the facts above do not support.
+Check the RECIPIENT and the SENDER equally. Unsupported: seeing or reading
+more than was stated, following someone over time, prior experience, habits,
+timelines, numbers, causes, industry norms, comparisons to other companies,
+or a problem nobody mentioned.
 
-Referring to the detail itself is supported. Asking a question is never a
-claim. Ordinary greetings and offers matching the stated reason are fine.
+DO NOT flag any of these, they are allowed:
+  - an opinion or judgment about something that IS in the detail. If the
+    detail mentions their branding, "the branding is intentional" is the
+    sender's own reaction to a fact they were given. That is allowed.
+  - a suggestion the reader can ignore, like "have you tried Pinterest?"
+  - questions of any kind. A question is never a claim.
+  - ordinary greetings, and offers matching the stated reason.
+Flag an opinion ONLY when holding it would require a fact nobody supplied.
 
-Reply with JSON only:
-{"supported": true}
-or
-{"supported": false, "claims": ["short quote", "short quote"]}` }],
+JOB 2, EMPTINESS. Does the line give the reader anything they did not have
+before they opened it? A point of view about their work, a suggestion, an
+offer, a specific thing noticed: any one of those counts. Mark it empty ONLY
+if the line does nothing but hand the facts back and attach a question.
+"I looked at your branding and content. Who handles that, you or a team?"
+is empty. If you are unsure, say it is not empty.
+
+Reply with JSON only, nothing else:
+{"supported": true, "empty": false}
+{"supported": false, "claims": ["short quote"], "empty": false}
+{"supported": true, "empty": true}` }],
           }),
         });
-        if (!r.ok) return [];
+        if (!r.ok) return { claims: [], empty: false };
         const d = await r.json();
         const txt = (d.content || []).filter(b => b.type === "text").map(b => b.text).join("");
         const j = JSON.parse(txt.slice(txt.indexOf("{"), txt.lastIndexOf("}") + 1));
-        return j.supported ? [] : (j.claims || []).slice(0, 5);
+        return {
+          claims: j.supported ? [] : (j.claims || []).slice(0, 5),
+          empty: j.empty === true,
+        };
       } catch {
-        return []; // a checker failure must never block a good line
+        // A checker failure must never block a good line.
+        return { claims: [], empty: false };
       }
     }
 
-    let invented = await ungroundedClaims(line);
-    if (invented.length) {
-      console.log("grounding check rejected:", invented.join(" | "));
+    // One score for both problems, so "strictly better" means the same thing
+    // whichever one the line had. Swapping an invented claim for an empty line
+    // is not an improvement and must not be accepted as one.
+    const badness = (c) => c.claims.length + (c.empty ? 1 : 0);
+
+    let check = await checkLine(line);
+    if (badness(check)) {
+      if (check.claims.length) console.log("grounding check rejected:", check.claims.join(" | "));
+      if (check.empty) console.log("emptiness check rejected:", line);
       try {
-        const regrounded = await callModel([
-          { role: "assistant", content: line },
-          { role: "user", content:
-            "These parts of that line are not supported by anything I told you: " +
-            invented.map(c => '"' + c + '"').join(", ") + ".\n\n" +
+        const note = check.claims.length
+          ? "These parts of that line are not supported by anything I told you: " +
+            check.claims.map(c => '"' + c + '"').join(", ") + ".\n\n" +
             "I never said any of that. Rewrite the line using only what I actually " +
-            "gave you. If removing them leaves you with less to say, say less. " +
-            "Return ONLY the new line." },
+            "gave you. You are allowed to have an opinion about the detail I DID " +
+            "give you. You are not allowed to add facts I didn't."
+          : "That line gives the reader nothing. It repeats what I told you and " +
+            "attaches a question, which is the one shape this tool exists to " +
+            "avoid.\n\nRewrite it so it hands them something: say what you think " +
+            "is true about the detail I gave you, or suggest one small thing they " +
+            "could try, or offer something specific. Stay inside the facts I gave " +
+            "you, but stop hedging into silence.";
+        const redone = await callModel([
+          { role: "assistant", content: line },
+          { role: "user", content: note + "\n\nReturn ONLY the new line." },
         ]);
-        const stillInvented = await ungroundedClaims(regrounded);
-        if (stillInvented.length < invented.length && !gradeLine(regrounded).length) {
-          line = regrounded; invented = stillInvented;
+        const recheck = await checkLine(redone);
+        if (badness(recheck) < badness(check) && !gradeLine(redone).length) {
+          line = redone; check = recheck;
         }
       } catch { /* keep the first line */ }
     }
 
-    if (invented.length) {
-      console.log("returned as ungrounded:", invented.join(" | "));
+    if (check.claims.length) {
+      console.log("returned as ungrounded:", check.claims.join(" | "));
       return res.status(422).json({
         error: "I couldn't write that without making something up. Give me one more detail you actually know about them and try again.",
+      });
+    }
+
+    if (check.empty) {
+      console.log("returned as empty:", line);
+      return res.status(422).json({
+        error: "That detail was too thin to say anything worth sending. Tell me where you came across them, or what you want from them, and try again.",
       });
     }
     // ---------------------------------------------------------------------
