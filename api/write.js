@@ -211,6 +211,34 @@ function stems(w) {
   return out;
 }
 
+// Mechanical cleanup. Lifted out of the handler so it can run after EVERY
+// generation, including repairs. It used to run once, which meant a repaired
+// line could come back carrying an em-dash the first line had been rejected for.
+function tidy(line) {
+  if (!line) return line;
+  const out = line
+    // Every dash character a model reaches for: em, en, figure, minus,
+    // horizontal bar, and the typed "--". Covers spaced and unspaced use, so
+    // both "word — word" and "word—word" are caught. One dash undoes the whole
+    // "a human wrote this" effect, and the prompt alone does not hold.
+    .replace(/\s*(--+|[—–―‒−])\s*/g, ", ")
+    // A dash opening the line leaves a stray comma at the front.
+    .replace(/^\s*,\s*/, "")
+    // "actually" is on the banned list and STILL gets through, because the
+    // model reads it as harmless. It is not: it corrects an expectation the
+    // reader has never formed, so in a cold opener it is always filler.
+    // Deleting it is safe in every position.
+    .replace(/\bactually\b,?\s*/gi, "")
+    // A vague spelled-out duration. Numeric ranges are the house style.
+    .replace(/\babout twenty minutes\b/gi, "15-20 minutes")
+    .replace(/,\s*,/g, ",")          // don't leave ",," behind
+    .replace(/,\s*([.!?])/g, "$1")   // a comma before end punctuation is never right
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  // Stripping a leading word can leave the line starting in lower case.
+  return out ? out.charAt(0).toUpperCase() + out.slice(1) : out;
+}
+
 function novelNouns(line, sources) {
   const from = new Set();
   for (const s of sources) {
@@ -423,8 +451,13 @@ export default async function handler(req, res) {
   };
   const toneLabel = which ? toneNames[which] : "";
 
+  // A NUDGE, NOT A MANDATE. This used to say "open by congratulating them, in a
+  // full sentence, before anything else", which fired on every detail containing
+  // "launched", "shipped" or "released" and made every one of those openers
+  // start the same way. Congratulating someone is often right and should never
+  // be compulsory: a launch mentioned in passing does not need a ceremony.
   const launchRule = mentionsLaunch
-    ? `\nThey have just launched or shipped something. Open by congratulating them on it in your own words, in a full sentence, before anything else. Say "congratulations", never "congrats".\n`
+    ? `\nThey may have just launched or shipped something. If the launch is the point of the detail, it is worth acknowledging in your own words. If it is mentioned in passing, leave it alone. Either way, "congratulations", never "congrats".\n`
     : "";
   // ---------------------------------------------------------------------------
 
@@ -484,19 +517,47 @@ starting with "That's", "That takes", "It's not" or "The X feels Y", delete it
 and merge what it was reaching for into the sentence before it.
 
 So the real shape is closer to:
-    1. What you saw AND what you make of it. One sentence, joined.
+    1. What you saw, and what you make of it IF you have something to make of
+       it. One sentence, joined.
     2. Optionally, one more thing you noticed, or why you are asking.
     3. What you want.
 
-LENGTH. Two to five sentences, and stop counting. Every gold line on this page
-is two, because merging the judgment into the observation is what produces two.
-That is the house style, not a shortfall.
+THE OPINION IS OPTIONAL. This matters as much as the merge rule above, and the
+two are easy to confuse. The merge rule says WHERE an opinion goes when you have
+one. It does not say you must have one.
 
-Two is right when the first sentence carries both what you saw and what you make
-of it, and the second asks for something real. Two is WRONG when the first
-sentence is a bare restatement and the second is a question, because then
-nothing was ever said. The test is never the count. It is whether the reader
-finishes the line holding something they did not have before.
+Some details support a judgment. Many do not. Forcing one produces manufactured
+wisdom, which is worse than saying nothing. These were all produced by an
+earlier version of this page that demanded an opinion in every line:
+
+    "easy to say and hard to track"
+    "most tools optimize for the wrong one"
+    "that would take real weight off"
+
+Every one is an aphorism invented to fill a slot. Use an opinion ONLY when it
+follows directly from the detail you were given. Never invent a comparison, a
+consequence, a motive, an industry norm or a reaction in order to sound
+insightful.
+
+A PRECISE OBSERVATION AND ONE REAL QUESTION IS A COMPLETE OPENER. Nothing is
+missing from it. The best line this tool has produced contains no opinion at all:
+
+    "I noticed your survey reports weighted percentages for each subgroup but
+     doesn't show the unweighted base beside them. Was that a reporting choice,
+     or are the base sizes sitting elsewhere in the report?"
+
+Nothing judged, nothing invented, and the question is one the reader can answer
+in a sentence. That is the target. Aim there before you aim anywhere clever.
+
+LENGTH. Two to five sentences, and stop counting. Every gold line on this page
+is two. That is the house style, not a shortfall.
+
+Two is right when the first sentence says something specific and the second asks
+for something real. Two is WRONG when the first sentence hands back the detail
+you were given in different words and the second is a question anyone could ask,
+because then nothing was ever said. The test is never the count, and it is not
+whether you delivered a verdict. It is whether the observation is SPECIFIC and
+the question is REAL.
 
 Go to four or five only when the detail genuinely carries it. Never pad to reach
 a number, and never trim a real thought to stay under one.
@@ -843,61 +904,19 @@ Return ONLY the line. No quotes, no preamble, no sign-off.`;
       return (d.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim().replace(/^["']|["']$/g, "");
     }
 
-    let line = await callModel();
-    let fails = gradeLine(line);
-
-    // ONE repair attempt. Handing back the exact failures works far better than
-    // regenerating blind, because the model can see what it did.
-    if (fails.length) {
-      console.log("quality gate rejected:", fails.join("; "));
-      try {
-        const repaired = await callModel([
-          { role: "assistant", content: line },
-          { role: "user", content:
-            "That line breaks the rules. Specifically: " + fails.join("; ") + ".\n\n" +
-            "Rewrite it. Keep only what the detail I gave you actually supports. " +
-            "Cut any claim about their industry, their timeline, their feelings or " +
-            "what other companies do. You are still allowed an opinion about the " +
-            "detail I DID give you, and I want one: three or four sentences, with " +
-            "the middle one saying what you think. Return ONLY the new line." },
-        ]);
-        const repairedFails = gradeLine(repaired);
-        // STRICTLY fewer. One violation swapped for a different one is not an
-        // improvement, and <= was quietly accepting exactly that.
-        if (repairedFails.length < fails.length) { line = repaired; fails = repairedFails; }
-      } catch { /* repair failed, keep the first line */ }
-    }
-
-    // Belt and braces on the dash rule. The prompt forbids em/en dashes, but a
-    // model can still slip, and one dash undoes the whole "a human wrote this"
-    // effect. So we also strip them mechanically, which cannot slip.
-    line = line
-      // Every dash character a model reaches for: em, en, figure, minus,
-      // horizontal bar, and the typed "--". Covers spaced and unspaced use,
-      // so both "word — word" and "word—word" are caught.
-      .replace(/\s*(--+|[—–―‒−])\s*/g, ", ")
-      // A dash opening the line leaves a stray comma at the front.
-      .replace(/^\s*,\s*/, "")
-      // "actually" is on the banned list and STILL gets through, because the
-      // model reads it as harmless. It is not: it corrects an expectation the
-      // reader has never formed, so in a cold opener it is always filler.
-      // Deleting it is safe in every position, so delete it mechanically, the
-      // same way the dashes are handled. "that actually feels different"
-      // becomes "that feels different" and nothing else changes.
-      .replace(/\bactually\b,?\s*/gi, "")
-      // Same story for a vague spelled-out duration the model likes to reach
-      // for. Numeric ranges are the house style.
-      .replace(/\babout twenty minutes\b/gi, "15-20 minutes")
-      // don't leave ",," or ", ," behind
-      .replace(/,\s*,/g, ",")
-      // a comma right before end punctuation is never right
-      .replace(/,\s*([.!?])/g, "$1")
-      // collapse any double spaces the swap introduced
-      .replace(/\s{2,}/g, " ")
-      .trim();
-
-    // Stripping a leading word can leave the line starting in lower case.
-    if (line) line = line.charAt(0).toUpperCase() + line.slice(1);
+    // ONE generation, then ONE combined repair at most.
+    //
+    // There used to be two separate repair paths: a Sonnet round for banned
+    // words and shapes, then later up to three more Sonnet rounds for invented
+    // claims. Five writer calls and four checker calls in the worst case, which
+    // measured at 14 seconds of a visitor staring at a spinner. Two round-trips
+    // fixing one line is one too many, and rounds three and four were not
+    // buying better prose, only a longer wait.
+    //
+    // Now: generate, tidy, run both checks, and if either complains, hand back
+    // EVERYTHING that is wrong in a single message and rewrite once. Worst case
+    // is two writer calls and two checker calls.
+    let line = tidy(await callModel());
 
     // --- GROUNDING AND EMPTINESS CHECK -----------------------------------
     // The regex gate catches words and shapes. It cannot know that the visitor
@@ -973,6 +992,21 @@ is absent from the list above AND falls into one of these six:
   5. an industry norm, or what other companies and teams do
   6. a problem, cause, consequence, or THING the detail never mentioned. An
      invented object counts even when the opinion about it is flattering.
+  7. A QUESTION WHOSE PREMISE WAS INVENTED. A question is not automatically
+     safe. It can smuggle in a fact by assuming it. Flag any question whose
+     premise introduces an event, a behaviour, a result, an object or a
+     reaction that is absent from the facts above. Real failures:
+       "Did you find people misreading the chart?"
+           assumes people read it, and assumes they misread it.
+       "What made you want to build it?"
+           assumes a motive, and that they built rather than commissioned it.
+       "Did the other data end up living somewhere else?"
+           assumes there is other data.
+       "What made people trust one number over six?"
+           assumes six numbers, and assumes a shift in trust.
+     Compare a clean one: "Was that a reporting choice, or are the base sizes
+     sitting elsewhere in the report?" Every noun in it came from the facts.
+     The question offers alternatives instead of asserting which happened.
 
 Everything else passes. DO NOT flag any of these:
   - an opinion or judgment about something that IS in the detail. If the
@@ -980,18 +1014,33 @@ Everything else passes. DO NOT flag any of these:
     sender's own reaction to a fact they were given, and it is allowed.
   - a hedge: "my guess is", "looks like", "I think it's".
   - a suggestion the reader can ignore, like "have you tried Pinterest?"
-  - questions of any kind. A question is never a claim.
+  - a question that only asks. "Was that a reporting choice?" assumes only
+    the reporting choice you were told about.
   - describing the detail in different words.
   - greetings, and offers matching the stated reason.
 
 If you are unsure, do not flag it.
 
-JOB 2, EMPTINESS. Does the line give the reader anything they did not have
-before they opened it? A point of view about their work, a suggestion, an
-offer, a specific thing noticed: any one of those counts. Mark it empty ONLY
-if the line does nothing but hand the facts back and attach a question.
-"I looked at your branding and content. Who handles that, you or a team?"
-is empty. If you are unsure, say it is not empty.
+JOB 2, EMPTINESS. This one is narrow. It is not asking whether the line is
+clever, and it is NOT asking whether the sender offered an opinion.
+
+A SPECIFIC OBSERVATION PLUS ONE RELEVANT QUESTION IS NOT EMPTY. It is the
+target. This passes with nothing else in it:
+  "I noticed your survey reports weighted percentages for each subgroup but
+   doesn't show the unweighted base beside them. Was that a reporting choice,
+   or are the base sizes sitting elsewhere in the report?"
+No opinion, no offer, no insight. Not empty. Do not flag lines like it.
+
+Mark it empty ONLY when the observation adds nothing to the facts, meaning it
+repeats the detail in different words, AND the question is one you could ask
+any company without reading anything:
+  "I looked at your branding and content. Who handles that, you or a team?"
+Both halves have to fail. A specific observation rescues a dull question, and
+a real question rescues a plain observation.
+
+If you are unsure, say it is not empty. Flagging this wrongly makes the
+writer invent an aphorism to fill the gap, which is a worse line than the one
+you flagged.
 
 Reply with JSON only, nothing else:
 {"supported": true, "empty": false}
@@ -1018,42 +1067,56 @@ Reply with JSON only, nothing else:
     // is not an improvement and must not be accepted as one.
     const badness = (c) => c.claims.length + (c.empty ? 1 : 0);
 
-    // THREE repair rounds. The writer has to land inside a narrow band, which is
-    // grounded AND not empty AND three to five sentences AND free of the
-    // floating verdict, and it often needs more than one look to get there.
-    // Each round costs one writer call plus one Haiku check, roughly a third of
-    // a cent, and ONLY bad lines pay it. The instruction is that quality is not
-    // traded for a dollar or two, so the loop is sized for the line, not the
-    // bill. It still breaks the moment a round stops improving things.
+    // BOTH CHECKS, THEN AT MOST ONE REPAIR.
+    let fails = gradeLine(line);
     let check = await checkLine(line);
-    for (let round = 0; round < 3 && badness(check); round++) {
-      if (check.claims.length) console.log("grounding check rejected:", check.claims.join(" | "));
-      if (check.empty) console.log("emptiness check rejected:", line);
+
+    if (fails.length || badness(check)) {
+      if (fails.length) console.log("style gate:", fails.join("; "));
+      if (check.claims.length) console.log("grounding:", check.claims.join(" | "));
+      if (check.empty) console.log("emptiness:", line);
+
+      // Every complaint in one message. The model repairs far better when it can
+      // see the whole list at once than when it is handed one problem, rewrites,
+      // and gets handed the next.
+      const problems = [];
+      if (fails.length) {
+        problems.push("It breaks these rules: " + fails.join("; ") + ".");
+      }
+      if (check.claims.length) {
+        problems.push(
+          "I never told you any of this, so it is invented: " +
+          check.claims.map(c => '"' + c + '"').join(", ") + ". " +
+          "Rewrite using only what I gave you. You may have an opinion about the " +
+          "detail I DID give you. You may not add facts I didn't.");
+      }
+      if (check.empty) {
+        // Deliberately does NOT ask for an opinion. Demanding one is what
+        // produced "easy to say and hard to track" and "most tools optimize for
+        // the wrong one": aphorisms invented to fill a slot. What this line is
+        // missing is specificity, not wisdom.
+        problems.push(
+          "That line hands my own detail back to me and attaches a question " +
+          "anyone could ask without reading anything. Make the OBSERVATION more " +
+          "specific, or ask a question that only makes sense for this person. " +
+          "Do not add an opinion or a clever remark to fix it. Do not ask who " +
+          "handles the work or whether it is in-house: those are sales questions " +
+          "and they read as sales questions.");
+      }
+
       try {
-        const note = check.claims.length
-          ? "These parts of that line are not supported by anything I told you: " +
-            check.claims.map(c => '"' + c + '"').join(", ") + ".\n\n" +
-            "I never said any of that. Rewrite the line using only what I actually " +
-            "gave you. You ARE allowed to have an opinion about the detail I did " +
-            "give you, and I want one. You are not allowed to add facts I didn't."
-          : "That line gives the reader nothing. It repeats what I told you and " +
-            "attaches a question, which is the one shape this tool exists to " +
-            "avoid.\n\nRewrite it so it hands them something. Say what you THINK " +
-            "is true about the detail I gave you, then ask for something you " +
-            "actually want. Not who handles it, not whether it's in-house: those " +
-            "are sales questions and they read as sales questions. Stay inside " +
-            "the facts I gave you, but stop hedging into silence.";
-        const redone = await callModel([
+        const redone = tidy(await callModel([
           { role: "assistant", content: line },
-          { role: "user", content: note + "\n\nReturn ONLY the new line." },
-        ]);
-        const recheck = await checkLine(redone);
-        if (badness(recheck) < badness(check) && !gradeLine(redone).length) {
-          line = redone; check = recheck;
-        } else {
-          break; // it isn't converging, stop paying for rounds
+          { role: "user", content: problems.join("\n\n") + "\n\nReturn ONLY the new line." },
+        ]));
+        const reFails = gradeLine(redone);
+        const reCheck = await checkLine(redone);
+        // STRICTLY better on the total, so one violation swapped for a different
+        // one is not accepted as progress.
+        if (reFails.length + badness(reCheck) < fails.length + badness(check)) {
+          line = redone; fails = reFails; check = reCheck;
         }
-      } catch { break; }
+      } catch { /* repair failed, keep what we have */ }
     }
 
     // NO REFUSALS. There used to be three separate 422 paths here: ungrounded,

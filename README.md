@@ -22,7 +22,7 @@ Built as a single self-contained page.
 ## Action
 - You give it a name, a company or newsletter, and one detail you noticed/researched.
 - You pick a tone per prospect: Warm, Direct, Technical, or Executive.
-- It returns a one- or two-sentence opener in a human voice.
+- It returns a two- to four-sentence opener in a human voice.
 - 15 free openers per browser. No signup.
 
 ## Who's using it?
