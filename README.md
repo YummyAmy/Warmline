@@ -39,3 +39,4 @@ warmline.dataaccordingtome.com
 ## Tech
 A single self-contained HTML page. The AI call runs server-side so the API key
 is never exposed to the browser.
+© 2026 Amy. All rights reserved. This code is public to read.
